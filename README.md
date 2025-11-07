@@ -23,43 +23,70 @@ Comprehensive **unit tests** are written using **JUnit 5** and **Mockito** to en
 | **Build Tool**         |        Maven        |
 ------------------------------------------------
 
-============================================================
+
 ## 🧩 Project Structure
 green-trade-platform/
+
 ├── .mvn/
+
 ├── database/
+
 ├── target/
+
 ├── pom.xml
+
 ├── README.md
+
 └── src/
+
 ├── main/
+
 │ ├── java/Green_trade/green_trade_platform/
+
 │ │ ├── advisor/
+
 │ │ ├── config/
+
 │ │ ├── controller/
+
 │ │ ├── enumerate/
+
 │ │ ├── exception/
+
 │ │ ├── filter/
+
 │ │ ├── mapper/
+
 │ │ ├── model/
+
 │ │ ├── repository/
+
 │ │ ├── service/
+
 │ │ ├── util/
+
 │ │ └── request/response/
+
 │ └── resources/
+
 │ ├── application.yml
+
 │ └── static/
+
 └── test/
+
 └── java/Green_trade/green_trade_platform/
+
 ├── service/
-============================================================
+
+
 🧪 Unit Testing
 🧠 Frameworks Used
 JUnit 5 (Jupiter) → for test structure and assertions
 Mockito → for mocking dependencies
 AssertJ / Hamcrest → for fluent assertions
 Spring Boot Test → for integration-style unit tests
-============================================================
+
 🧩 Scope
 All main service flows are covered, including:
 Buyer operations (BuyerService)
@@ -67,10 +94,10 @@ Subscription management (SubscriptionPackageService)
 Product posting and verification (PostProductService)
 External shipping integration (GhnService)
 And so on 
-============================================================
+
 🧱 Coverage Goal
 Minimum coverage: 80%
-============================================================
+
 ## 🧪 How to Run Unit Tests (Spring Boot + JUnit + Mockito)
 ### 🧰 Prerequisites
 Make sure you have the following installed:
