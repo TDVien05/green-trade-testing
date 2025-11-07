@@ -25,35 +25,33 @@ Comprehensive **unit tests** are written using **JUnit 5** and **Mockito** to en
 
 ============================================================
 ## 🧩 Project Structure
-> '''
-> green-trade-platform/
-> ├── .mvn/
-> ├── database/
-> ├── target/
-> ├── pom.xml
-> ├── README.md
-> └── src/
->     ├── main/
->     │   ├── java/Green_trade/green_trade_platform/
->     │   │   ├── advisor/
->     │   │   ├── config/
->     │   │   ├── controller/
->     │   │   ├── enumerate/
->     │   │   ├── exception/
->     │   │   ├── filter/
->     │   │   ├── mapper/
->     │   │   ├── model/
->     │   │   ├── repository/
->     │   │   ├── service/
->     │   │   ├── util/
->     │   │   └── request/response/
->     │   └── resources/
->     │       ├── application.yml
->     │       └── static/
->     └── test/
->         └── java/Green_trade/green_trade_platform/
->             ├── service/
-> '''
+green-trade-platform/
+├── .mvn/
+├── database/
+├── target/
+├── pom.xml
+├── README.md
+└── src/
+├── main/
+│ ├── java/Green_trade/green_trade_platform/
+│ │ ├── advisor/
+│ │ ├── config/
+│ │ ├── controller/
+│ │ ├── enumerate/
+│ │ ├── exception/
+│ │ ├── filter/
+│ │ ├── mapper/
+│ │ ├── model/
+│ │ ├── repository/
+│ │ ├── service/
+│ │ ├── util/
+│ │ └── request/response/
+│ └── resources/
+│ ├── application.yml
+│ └── static/
+└── test/
+└── java/Green_trade/green_trade_platform/
+├── service/
 ============================================================
 🧪 Unit Testing
 🧠 Frameworks Used
