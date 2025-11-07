@@ -25,6 +25,7 @@ Comprehensive **unit tests** are written using **JUnit 5** and **Mockito** to en
 
 ============================================================
 ## 🧩 Project Structure
+> '''
 > green-trade-platform/
 > ├── .mvn/
 > ├── database/
@@ -52,6 +53,7 @@ Comprehensive **unit tests** are written using **JUnit 5** and **Mockito** to en
 >     └── test/
 >         └── java/Green_trade/green_trade_platform/
 >             ├── service/
+> '''
 ============================================================
 🧪 Unit Testing
 🧠 Frameworks Used
