@@ -119,5 +119,5 @@ Make sure you have the following installed:
    --> Run 'Tests in Green_trade.green_trade_platform.service' with Coverage
 6. At coverage window --> Select icon ↗️ --> Save
 7. See the result
-============================================================
+
    
