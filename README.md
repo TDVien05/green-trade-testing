@@ -1,3 +1,5 @@
+# View this tutorial with code mode to easy to read
+
 # ⚡ Green Trade Platform (Backend)
 
 ## 📘 Overview
