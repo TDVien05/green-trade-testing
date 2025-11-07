@@ -1,5 +1,3 @@
-# View this tutorial with code mode to easy to read
-
 # ⚡ Green Trade Platform (Backend)
 
 ## 📘 Overview
@@ -80,14 +78,14 @@ green-trade-platform/
 ├── service/
 
 
-🧪 Unit Testing
+## 🧪 Unit Testing
 🧠 Frameworks Used
 JUnit 5 (Jupiter) → for test structure and assertions
 Mockito → for mocking dependencies
 AssertJ / Hamcrest → for fluent assertions
 Spring Boot Test → for integration-style unit tests
 
-🧩 Scope
+###🧩 Scope
 All main service flows are covered, including:
 Buyer operations (BuyerService)
 Subscription management (SubscriptionPackageService)
@@ -95,7 +93,7 @@ Product posting and verification (PostProductService)
 External shipping integration (GhnService)
 And so on 
 
-🧱 Coverage Goal
+## 🧱 Coverage Goal
 Minimum coverage: 80%
 
 ## 🧪 How to Run Unit Tests (Spring Boot + JUnit + Mockito)
