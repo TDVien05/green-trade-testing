@@ -1,0 +1,176 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MailServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: MailServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MailServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (13/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.request.MailRequest;
+&nbsp;import jakarta.mail.MessagingException;
+&nbsp;import jakarta.mail.internet.MimeMessage;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.mail.javamail.JavaMailSender;
+&nbsp;import org.springframework.mail.javamail.MimeMessageHelper;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@AllArgsConstructor
+&nbsp;public class MailServiceImpl {
+&nbsp;    private final JavaMailSender mailSender;
+&nbsp;
+&nbsp;    public void sendBeautifulMail(MailRequest req) {
+&nbsp;        try {
+<b class="fc">&nbsp;            MimeMessage message = mailSender.createMimeMessage();</b>
+<b class="fc">&nbsp;            MimeMessageHelper helper = new MimeMessageHelper(message, true, &quot;UTF-8&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            helper.setFrom(req.getFrom());</b>
+<b class="fc">&nbsp;            helper.setTo(req.getTo());</b>
+<b class="fc">&nbsp;            helper.setSubject(&quot;💚 &quot; + req.getSubject());</b>
+<b class="fc">&nbsp;            helper.setText(buildBeautifulHtml(req), true);</b>
+&nbsp;
+<b class="fc">&nbsp;            mailSender.send(message);</b>
+<b class="fc">&nbsp;            log.info(&quot;✅ Email sent successfully to {}&quot;, req.getTo());</b>
+&nbsp;        } catch (MessagingException e) {
+<b class="fc">&nbsp;            log.error(&quot;❌ Failed to send email to {}: {}&quot;, req.getTo(), e.getMessage());</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;Failed to send email&quot;, e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String buildBeautifulHtml(MailRequest req) {
+<b class="fc">&nbsp;        return &quot;&quot;&quot;</b>
+&nbsp;                    &lt;div style=&quot;font-family: &#39;Segoe UI&#39;, Tahoma, sans-serif;
+&nbsp;                                background-color: #f4f4f9;
+&nbsp;                                padding: 30px;
+&nbsp;                                border-radius: 12px;
+&nbsp;                                max-width: 650px;
+&nbsp;                                margin: auto;
+&nbsp;                                box-shadow: 0 0 12px rgba(0,0,0,0.1);&quot;&gt;
+&nbsp;                
+&nbsp;                        &lt;div style=&quot;background-color: #4CAF50; color: white; 
+&nbsp;                                    padding: 18px; border-radius: 8px 8px 0 0;
+&nbsp;                                    text-align: center;&quot;&gt;
+&nbsp;                            &lt;h2 style=&quot;margin: 0;&quot;&gt;🌿 Green Trade Platform&lt;/h2&gt;
+&nbsp;                        &lt;/div&gt;
+&nbsp;                
+&nbsp;                        &lt;div style=&quot;background: white; padding: 25px 30px; border-radius: 0 0 8px 8px;&quot;&gt;
+&nbsp;                            &lt;p style=&quot;font-size: 16px; color: #333;&quot;&gt;Xin chào,&lt;/p&gt;
+&nbsp;                
+&nbsp;                            &lt;div style=&quot;font-size: 15px; color: #444; line-height: 1.6;&quot;&gt;
+&nbsp;                                %s
+&nbsp;                            &lt;/div&gt;
+&nbsp;                
+&nbsp;                            &lt;br/&gt;
+&nbsp;                            &lt;p style=&quot;font-size: 14px; color: #777;&quot;&gt;
+&nbsp;                                Trân trọng,&lt;br/&gt;
+&nbsp;                                &lt;strong&gt;Đội ngũ Green Trade 💚&lt;/strong&gt;
+&nbsp;                            &lt;/p&gt;
+&nbsp;                        &lt;/div&gt;
+&nbsp;                
+&nbsp;                        &lt;footer style=&quot;margin-top: 20px; text-align: center; font-size: 12px; color: #999;&quot;&gt;
+&nbsp;                            © 2025 Green Trade Platform. All rights reserved.
+&nbsp;                        &lt;/footer&gt;
+&nbsp;                    &lt;/div&gt;
+<b class="fc">&nbsp;                &quot;&quot;&quot;.formatted(req.getMessage());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-07 21:16</div>
+</div>
+</body>
+</html>

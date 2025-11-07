@@ -1,0 +1,278 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AdminServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: AdminServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AdminServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (6/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (10/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86%
+  </span>
+  <span class="absValue">
+    (49/57)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.AccountStatus;
+&nbsp;import Green_trade.green_trade_platform.mapper.AdminMapper;
+&nbsp;import Green_trade.green_trade_platform.model.Admin;
+&nbsp;import Green_trade.green_trade_platform.model.Buyer;
+&nbsp;import Green_trade.green_trade_platform.repository.AdminRepository;
+&nbsp;import Green_trade.green_trade_platform.request.CreateAdminRequest;
+&nbsp;import Green_trade.green_trade_platform.request.MailRequest;
+&nbsp;import Green_trade.green_trade_platform.util.StringUtils;
+&nbsp;import jakarta.persistence.EntityNotFoundException;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.PageRequest;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.data.domain.Sort;
+&nbsp;import org.springframework.security.core.Authentication;
+&nbsp;import org.springframework.security.core.context.SecurityContextHolder;
+&nbsp;import org.springframework.security.crypto.password.PasswordEncoder;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.web.multipart.MultipartFile;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@RequiredArgsConstructor
+&nbsp;public class AdminServiceImpl {
+&nbsp;    private final AdminRepository adminRepository;
+&nbsp;    private final StringUtils stringUtils;
+&nbsp;    private final AdminMapper adminMapper;
+&nbsp;    private final PasswordEncoder passwordEncoder;
+&nbsp;    private final CloudinaryService cloudinaryService;
+&nbsp;    private final MailServiceImpl mailSender;
+&nbsp;
+&nbsp;    public Admin getCurrentUser() {
+<b class="nc">&nbsp;        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</b>
+<b class="nc">&nbsp;        String username = authentication.getName(); // Lấy username hiện tại</b>
+&nbsp;
+<b class="nc">&nbsp;        return adminRepository.findByEmployeeNumber(username)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new RuntimeException(&quot;Không tìm thấy người dùng: &quot; + username));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Admin handleCreateAdminAccount(MultipartFile avatarFile, CreateAdminRequest request) throws IOException {
+<b class="fc">&nbsp;        if (adminRepository.existsByEmployeeNumber(request.getEmployeeNumber())) {</b>
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Duplicate employee number.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (adminRepository.existsByPhoneNumber(request.getPhoneNumber())) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;This phone number is already in use. PLease try another phone number.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (adminRepository.existsByEmail(request.getEmail())) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;This email is already in use. Please try another email.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Admin admin = adminMapper.toEntity(request);</b>
+<b class="fc">&nbsp;        admin.setFullName(stringUtils.formatFullName(admin.getFullName()));</b>
+&nbsp;
+<b class="fc">&nbsp;        admin.setPassword(passwordEncoder.encode(admin.getPassword()));</b>
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;String, String&gt; temp = cloudinaryService.upload(avatarFile, &quot;admin/&quot; + admin.getFullName() + &quot;/avatar&quot;);</b>
+<b class="fc">&nbsp;        admin.setAvatarPublicId(temp.get(&quot;publicId&quot;));</b>
+<b class="fc">&nbsp;        admin.setAvatarUrl(temp.get(&quot;fileUrl&quot;));</b>
+&nbsp;
+<b class="fc">&nbsp;        Admin savedAdmin = adminRepository.save(admin);</b>
+&nbsp;        // ✅ Gửi email thông báo đến admin con
+<b class="fc">&nbsp;        String htmlMessage = &quot;&quot;&quot;</b>
+&nbsp;                    &lt;div style=&#39;font-family: Arial, sans-serif; line-height: 1.6; color: #333;&#39;&gt;
+&nbsp;                        &lt;h2 style=&#39;color: #4CAF50;&#39;&gt;🌿 Chào mừng đến với Green Trade Platform&lt;/h2&gt;
+&nbsp;                        &lt;p&gt;Xin chào &lt;strong&gt;%s&lt;/strong&gt;,&lt;/p&gt;
+&nbsp;                        &lt;p&gt;Bạn đã được &lt;strong&gt;cấp quyền quản trị viên&lt;/strong&gt; trên nền tảng Green Trade.&lt;/p&gt;
+&nbsp;                        &lt;p&gt;Dưới đây là thông tin đăng nhập của bạn:&lt;/p&gt;
+&nbsp;                        &lt;ul&gt;
+&nbsp;                            &lt;li&gt;&lt;strong&gt;Số nhân viên:&lt;/strong&gt; %s&lt;/li&gt;
+&nbsp;                            &lt;li&gt;&lt;strong&gt;Mật khẩu:&lt;/strong&gt; %s&lt;/li&gt;
+&nbsp;                        &lt;/ul&gt;
+&nbsp;                        &lt;p&gt;Vui lòng đăng nhập ngay và thay đổi mật khẩu sau lần đầu truy cập.&lt;/p&gt;
+&nbsp;                        &lt;hr style=&#39;border:none;border-top:1px solid #ccc;margin:20px 0;&#39;/&gt;
+&nbsp;                        &lt;p&gt;💚 Cảm ơn bạn đã đồng hành cùng đội ngũ quản trị Green Trade Platform!&lt;/p&gt;
+&nbsp;                    &lt;/div&gt;
+<b class="fc">&nbsp;                &quot;&quot;&quot;.formatted(</b>
+<b class="fc">&nbsp;                admin.getEmployeeNumber(),</b>
+<b class="fc">&nbsp;                admin.getEmail(),</b>
+<b class="fc">&nbsp;                request.getPassword()</b>
+&nbsp;        );
+&nbsp;
+<b class="fc">&nbsp;        MailRequest mailRequest = MailRequest.builder()</b>
+<b class="fc">&nbsp;                .from(&quot;green.trade.platform.391@gmail.com&quot;)</b>
+<b class="fc">&nbsp;                .to(admin.getEmail())</b>
+<b class="fc">&nbsp;                .subject(&quot;Green Trade Platform - Tài khoản quản trị viên mới&quot;)</b>
+<b class="fc">&nbsp;                .message(htmlMessage)</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        mailSender.sendBeautifulMail(mailRequest);</b>
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Admin Service] Created new admin: {}&quot;, admin.getEmail());</b>
+&nbsp;
+<b class="fc">&nbsp;        return savedAdmin;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void blockAccount(long id, String message, String activity) {
+<b class="fc">&nbsp;        Admin admin = adminRepository.findById(id).orElseThrow(</b>
+<b class="nc">&nbsp;                () -&gt; new EntityNotFoundException(&quot;Can not find admin with this id: &quot; + id)</b>
+&nbsp;        );
+<b class="fc">&nbsp;        if (activity.equalsIgnoreCase(&quot;block&quot;)) {</b>
+<b class="fc">&nbsp;            admin.setStatus(AccountStatus.INACTIVE);</b>
+<b class="pc">&nbsp;        } else if (activity.equalsIgnoreCase(&quot;unblock&quot;)) {</b>
+<b class="nc">&nbsp;            admin.setStatus(AccountStatus.ACTIVE);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Activity must be &#39;block&#39; or &#39;unblock&#39;&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        adminRepository.save(admin);</b>
+&nbsp;        // ✅ Chuẩn bị nội dung HTML cho email thông báo
+<b class="pc">&nbsp;        String action = activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;bị khóa tạm thời&quot; : &quot;được mở khóa lại&quot;;</b>
+<b class="pc">&nbsp;        String color = activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;#e74c3c&quot; : &quot;#4CAF50&quot;;</b>
+&nbsp;
+<b class="fc">&nbsp;        String htmlMessage = &quot;&quot;&quot;</b>
+&nbsp;                &lt;div style=&#39;font-family: Arial, sans-serif; line-height: 1.6; color: #333;&#39;&gt;
+&nbsp;                    &lt;h2 style=&#39;color: #4CAF50;&#39;&gt;🌿 Thông báo từ Green Trade Platform&lt;/h2&gt;
+&nbsp;                    &lt;p&gt;Xin chào &lt;strong&gt;%s&lt;/strong&gt;,&lt;/p&gt;
+&nbsp;                    &lt;p&gt;Tài khoản quản trị của bạn đã &lt;strong style=&#39;color:%s;&#39;&gt;%s&lt;/strong&gt; bởi &lt;strong&gt;Super Admin&lt;/strong&gt; của hệ thống.&lt;/p&gt;
+&nbsp;                    &lt;p&gt;&lt;strong&gt;Lý do:&lt;/strong&gt; %s&lt;/p&gt;
+&nbsp;                    &lt;hr style=&#39;border: none; border-top: 1px solid #ccc; margin: 20px 0;&#39;/&gt;
+&nbsp;                    &lt;p&gt;Nếu bạn có thắc mắc hoặc cần khiếu nại, vui lòng liên hệ 
+&nbsp;                        &lt;a href=&#39;mailto:green.trade.platform.391@gmail.com&#39; 
+&nbsp;                           style=&#39;color:#4CAF50;font-weight:bold;text-decoration:none;&#39;&gt;
+&nbsp;                            đội ngũ hỗ trợ Green Trade
+&nbsp;                        &lt;/a&gt; để được xem xét và hỗ trợ.&lt;/p&gt;
+&nbsp;                    &lt;p&gt;💚 Cảm ơn bạn đã đồng hành cùng Green Trade Platform!&lt;/p&gt;
+&nbsp;                &lt;/div&gt;
+<b class="fc">&nbsp;                &quot;&quot;&quot;.formatted(</b>
+<b class="fc">&nbsp;                admin.getFullName(),</b>
+&nbsp;                color,
+<b class="fc">&nbsp;                action.toUpperCase(),</b>
+&nbsp;                message
+&nbsp;        );
+&nbsp;
+&nbsp;        // ✅ Gửi mail thông báo đến admin bị chặn/mở khóa
+<b class="fc">&nbsp;        MailRequest mailRequest = MailRequest.builder()</b>
+<b class="fc">&nbsp;                .from(&quot;green.trade.platform.391@gmail.com&quot;)</b>
+<b class="fc">&nbsp;                .to(admin.getEmail())</b>
+<b class="pc">&nbsp;                .subject(&quot;Green Trade Platform - Tài khoản của bạn đã &quot; + (activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;bị khóa&quot; : &quot;được mở khóa&quot;))</b>
+<b class="fc">&nbsp;                .message(htmlMessage)</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        mailSender.sendBeautifulMail(mailRequest);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Page&lt;Admin&gt; getAdminList(int page, int size) {
+<b class="fc">&nbsp;        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;id&quot;).descending());</b>
+<b class="fc">&nbsp;        return adminRepository.findAll(pageable);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Admin getAdminProfile(long id) {
+<b class="fc">&nbsp;        return adminRepository.findById(id).orElseThrow(</b>
+<b class="fc">&nbsp;                () -&gt; new EntityNotFoundException(&quot;Can not find admin with this id: &quot; + id)</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-07 21:16</div>
+</div>
+</body>
+</html>

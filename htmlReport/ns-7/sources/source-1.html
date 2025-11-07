@@ -1,0 +1,194 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AuthTokenFilter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.filter</a>
+</div>
+
+<h1>Coverage Summary for Class: AuthTokenFilter (Green_trade.green_trade_platform.filter)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AuthTokenFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.filter;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.exception.AuthException;
+&nbsp;import Green_trade.green_trade_platform.service.implement.UserDetailsServiceCustomer;
+&nbsp;import Green_trade.green_trade_platform.util.JwtUtils;
+&nbsp;import jakarta.servlet.FilterChain;
+&nbsp;import jakarta.servlet.ServletException;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+&nbsp;import org.springframework.security.core.context.SecurityContextHolder;
+&nbsp;import org.springframework.security.core.userdetails.UserDetails;
+&nbsp;import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;import org.springframework.web.filter.OncePerRequestFilter;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;@Slf4j</b>
+<b class="nc">&nbsp;public class AuthTokenFilter extends OncePerRequestFilter {</b>
+&nbsp;    @Autowired
+&nbsp;    private JwtUtils jwtUtils;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private UserDetailsServiceCustomer userDetailsService;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+&nbsp;            throws ServletException, IOException {
+&nbsp;
+<b class="nc">&nbsp;        String path = request.getServletPath();</b>
+&nbsp;
+<b class="nc">&nbsp;        if (path.startsWith(&quot;/api/v1/auth&quot;) || path.startsWith(&quot;/ws&quot;) || path.startsWith(&quot;/queue&quot;)</b>
+<b class="nc">&nbsp;                || path.startsWith(&quot;/api/v1/vnpay/return&quot;) || path.startsWith(&quot;/api/v1/vnpay/ipn&quot;)</b>
+<b class="nc">&nbsp;                || path.startsWith(&quot;/swagger-ui&quot;) || path.startsWith(&quot;/v3/api-docs&quot;)</b>
+<b class="nc">&nbsp;                || path.startsWith(&quot;/verify-otp&quot;) || path.startsWith(&quot;/api/test/redis&quot;)</b>
+<b class="nc">&nbsp;                || path.startsWith(&quot;/forgot-password&quot;) || path.startsWith(&quot;/verify-otp-forgot-password&quot;)</b>
+<b class="nc">&nbsp;                || path.startsWith(&quot;/verify-username-forgot-password&quot;) || path.startsWith(&quot;/signin-google&quot;)</b>
+<b class="nc">&nbsp;                || path.startsWith(&quot;/api/v1/post-product&quot;)) {</b>
+<b class="nc">&nbsp;            filterChain.doFilter(request, response);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Auth filter] Authentication in request : {}&quot;, request.getRequestURI());</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            String token = getTokenFromRequest(request);</b>
+<b class="nc">&nbsp;            if (token != null &amp;&amp; jwtUtils.verifyToken(token)) {</b>
+<b class="nc">&nbsp;                String username = jwtUtils.getUsernameFromToken(token);</b>
+&nbsp;
+<b class="nc">&nbsp;                UserDetails userDetails = userDetailsService.loadUserByUsername(username);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [Auth filter] User detail loading: {}&quot;, userDetails.getUsername());</b>
+&nbsp;
+<b class="nc">&nbsp;                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(</b>
+<b class="nc">&nbsp;                        userDetails, null, userDetails.getAuthorities());</b>
+&nbsp;
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [Auth filter] Role from JWT: {}&quot;, userDetails.getAuthorities());</b>
+&nbsp;
+<b class="nc">&nbsp;                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));</b>
+<b class="nc">&nbsp;                SecurityContextHolder.getContext().setAuthentication(authenticationToken);</b>
+&nbsp;            }
+&nbsp;        } catch (Exception e) {
+&nbsp;            // Ném ra AuthenticationException để EntryPoint xử lý (trả về 401 JSON)
+<b class="nc">&nbsp;            throw new AuthException(&quot;&gt;&gt;&gt; [Auth filter] Authentication failed: &quot; + e.getMessage());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        filterChain.doFilter(request, response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getTokenFromRequest(HttpServletRequest request) {
+<b class="nc">&nbsp;        String jwt = jwtUtils.getTokenFromRequest(request);</b>
+<b class="nc">&nbsp;        log.info(&quot;AuthTokenFilter.java: {}&quot;, jwt);</b>
+<b class="nc">&nbsp;        return jwt;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

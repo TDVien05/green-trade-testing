@@ -1,0 +1,156 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DateUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.util</a>
+</div>
+
+<h1>Coverage Summary for Class: DateUtils (Green_trade.green_trade_platform.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DateUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.util;
+&nbsp;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.time.Period;
+&nbsp;import java.time.format.DateTimeFormatter;
+&nbsp;import java.time.format.DateTimeParseException;
+&nbsp;
+&nbsp;@Component
+<b class="nc">&nbsp;public class DateUtils {</b>
+&nbsp;    public LocalDate parseAndValidateDob(String dobStr) {
+<b class="nc">&nbsp;        if (dobStr == null || dobStr.trim().isEmpty()) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Ngày sinh không được để trống.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy&quot;);</b>
+&nbsp;
+&nbsp;        LocalDate dob;
+&nbsp;        try {
+<b class="nc">&nbsp;            dob = LocalDate.parse(dobStr.trim(), formatter);</b>
+&nbsp;        } catch (DateTimeParseException e) {
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Định dạng ngày sinh không hợp lệ. Vui lòng nhập theo dạng dd-MM-yyyy.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        LocalDate today = LocalDate.now();</b>
+&nbsp;
+<b class="nc">&nbsp;        if (dob.isAfter(today)) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Ngày sinh không thể là ngày trong tương lai.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int age = Period.between(dob, today).getYears();</b>
+&nbsp;
+<b class="nc">&nbsp;        if (age &gt; 100) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Tuổi không hợp lệ (quá 100 tuổi).&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return dob;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

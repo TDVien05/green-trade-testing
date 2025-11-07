@@ -1,0 +1,4 @@
+username,password,fullName,street,wardName,districtName,provinceName,phoneNumber,avatarUrl,avatarPublicId,email,gender,dob
+john_doe,secret,John Doe,1 Green St,Ward 1,District A,Province X,0123456789,http://avatar,publicId,john@example.com,MALE,1990-01-01
+alice_wonder,pass123,Alice Wonder,12 Flower Rd,Ward 3,District B,Province Y,0909876543,http://avatar2,publicId2,alice@example.com,FEMALE,1995-05-05
+bob_tran,secure,Bob Tran,88 Ocean Ave,Ward 2,District C,Province Z,0988888888,http://avatar3,publicId3,bob@example.com,MALE,1992-02-20

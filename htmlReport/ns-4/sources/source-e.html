@@ -1,0 +1,479 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SellerController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: SellerController (Green_trade.green_trade_platform.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SellerController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/50)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.controller;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.mapper.OrderMapper;
+&nbsp;import Green_trade.green_trade_platform.mapper.PostProductMapper;
+&nbsp;import Green_trade.green_trade_platform.mapper.ResponseMapper;
+&nbsp;import Green_trade.green_trade_platform.mapper.SellerMapper;
+&nbsp;import Green_trade.green_trade_platform.model.Order;
+&nbsp;import Green_trade.green_trade_platform.model.PostProduct;
+&nbsp;import Green_trade.green_trade_platform.model.Seller;
+&nbsp;import Green_trade.green_trade_platform.model.Subscription;
+&nbsp;import Green_trade.green_trade_platform.request.UploadPostProductRequest;
+&nbsp;import Green_trade.green_trade_platform.request.VerifiedPostProductRequest;
+&nbsp;import Green_trade.green_trade_platform.response.*;
+&nbsp;import Green_trade.green_trade_platform.service.implement.OrderServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.service.implement.PostProductServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.service.implement.SellerServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.service.implement.SubscriptionPackageServiceImpl;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import jakarta.validation.Valid;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.MediaType;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.security.access.prepost.PreAuthorize;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;import org.springframework.web.multipart.MultipartFile;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/api/v1/seller&quot;)
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;@AllArgsConstructor
+&nbsp;public class SellerController {
+&nbsp;
+&nbsp;    private final ResponseMapper responseMapper;
+&nbsp;    private final SellerServiceImpl sellerService;
+&nbsp;    private final SellerMapper sellerMapper;
+&nbsp;    private final PostProductServiceImpl postProductService;
+&nbsp;    private final PostProductMapper postProductMapper;
+&nbsp;    private final OrderServiceImpl orderService;
+&nbsp;    private final OrderMapper orderMapper;
+&nbsp;    private final SubscriptionPackageServiceImpl subscriptionPackageService;
+&nbsp;
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Verify Service Package Validity&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint allows a **seller** to verify whether their current service package is still valid.
+&nbsp;                    &lt;br&gt;&lt;br&gt;
+&nbsp;                    Workflow:
+&nbsp;                    &lt;ul&gt;
+&nbsp;                        &lt;li&gt;Checks the service subscription associated with the seller&#39;s username.&lt;/li&gt;
+&nbsp;                        &lt;li&gt;Returns whether the package is valid and the expiry date.&lt;/li&gt;
+&nbsp;                    &lt;/ul&gt;
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/{username}/check-service-package-validity&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;SubscriptionResponse, Object&gt;&gt; checkServicePackageValidity(@PathVariable String username) throws Exception {
+<b class="nc">&nbsp;        SubscriptionResponse result = sellerService.checkServicePackageValidity(username);</b>
+<b class="nc">&nbsp;        RestResponse&lt;SubscriptionResponse, Object&gt; response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;Service Package is valid&quot;,
+&nbsp;                result,
+&nbsp;                null
+&nbsp;        );
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Upload a product post for selling&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint allows a **seller** to upload a new post for a product they want to sell.
+&nbsp;                    &lt;br&gt;&lt;br&gt;
+&nbsp;                    The request consists of:
+&nbsp;                    &lt;ul&gt;
+&nbsp;                        &lt;li&gt;Product details (title, brand, model, price, etc.) in form-data.&lt;/li&gt;
+&nbsp;                        &lt;li&gt;One or more product images uploaded as multipart files.&lt;/li&gt;
+&nbsp;                    &lt;/ul&gt;
+&nbsp;                    The response returns the created post details after saving it successfully.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/post-products&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;PostProductResponse, Object&gt;&gt; uploadPostProduct(
+&nbsp;            @ModelAttribute UploadPostProductRequest request,
+&nbsp;            @RequestPart(&quot;pictures&quot;) List&lt;MultipartFile&gt; files
+&nbsp;    ) throws Exception {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed came uploadPostProduct&quot;);</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed mapped files data: {}&quot;, files);</b>
+<b class="nc">&nbsp;        Seller seller = sellerService.getCurrentUser();</b>
+<b class="nc">&nbsp;        request.setSellerId(seller.getSellerId());</b>
+&nbsp;
+<b class="nc">&nbsp;        Subscription subscription = subscriptionPackageService.updateRemainPost(seller);</b>
+&nbsp;
+<b class="nc">&nbsp;        PostProduct newPostProduct = postProductService.createNewPostProduct(request, files);</b>
+&nbsp;
+<b class="nc">&nbsp;        PostProductResponse responseData = postProductMapper.toDto(newPostProduct);</b>
+&nbsp;
+<b class="nc">&nbsp;        RestResponse&lt;PostProductResponse, Object&gt; response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;UPLOADED POST SUCCESSFULLY&quot;,
+&nbsp;                responseData,
+&nbsp;                null
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Upload post product pictures to Cloudinary&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Allows a seller to upload one or more pictures for a specific post product.  
+&nbsp;                        The uploaded images are stored on Cloudinary, and the post product record is updated 
+&nbsp;                        with the image URLs.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The seller provides the post product ID as a path parameter.
+&nbsp;                        2. Multiple images are sent as multipart files in the `pictures` request part.
+&nbsp;                        3. The system uploads each file to Cloudinary and associates the image URLs with the post product.
+&nbsp;                        4. The endpoint returns the updated post product details including all image URLs.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Sellers adding images for a newly created product listing.
+&nbsp;                        - Updating existing listings with better or additional pictures.
+&nbsp;                        - Synchronizing image uploads with Cloudinary storage.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - Requires a valid JWT token with `ROLE_SELLER` authority.
+&nbsp;                        - Only the owner of the product can upload or modify its images.
+&nbsp;                        - File validation (e.g., image size and type) should be enforced on both client and server.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @PostMapping(&quot;/upload-pictures-cloudinary/{id}&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;PostProductResponse, Object&gt;&gt; uploadPostProduct(
+&nbsp;            @PathVariable Long id,
+&nbsp;            @RequestPart(&quot;pictures&quot;) List&lt;MultipartFile&gt; files
+&nbsp;    ) throws Exception {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed came uploadPostProduct&quot;);</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed mapped files data: {}&quot;, files);</b>
+<b class="nc">&nbsp;        PostProduct newPostProduct = postProductService.uploadPostProductPicture(id, files);</b>
+<b class="nc">&nbsp;        PostProductResponse responseData = postProductMapper.toDto(newPostProduct);</b>
+<b class="nc">&nbsp;        RestResponse&lt;PostProductResponse, Object&gt; response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;UPLOADED POST PICTURES SUCCESSFULLY&quot;,
+&nbsp;                responseData,
+&nbsp;                null
+&nbsp;        );
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ROLER_SELLER&#39;)&quot;)
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Request verification for a post product&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Allows a seller to request verification for a specific post product.  
+&nbsp;                        This process typically ensures that the post product meets platform standards 
+&nbsp;                        (e.g., authenticity, completeness, compliance) before being made public or promoted.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The seller sends a verification request for one of their post products.
+&nbsp;                        2. The system validates ownership and product eligibility.
+&nbsp;                        3. The post product status changes to `PENDING_VERIFICATION`.
+&nbsp;                        4. The platform’s review team will then approve or reject the verification request.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Sellers submitting products for manual review or moderation before publishing.
+&nbsp;                        - Quality control and fraud prevention workflows.
+&nbsp;                        - Enabling verified products to gain higher trust and visibility on the platform.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - Requires authentication via JWT token with `ROLE_SELLER`.
+&nbsp;                        - Sellers can only request verification for products they own.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/verified-post-product-request&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;PostProductResponse, Object&gt;&gt; postProductVerifiedRequest(@Valid @RequestBody VerifiedPostProductRequest request) throws Exception {
+<b class="nc">&nbsp;        PostProduct result = postProductService.postProductVerifiedRequest(request);</b>
+<b class="nc">&nbsp;        PostProductResponse responseData = postProductMapper.toDto(result);</b>
+<b class="nc">&nbsp;        RestResponse&lt;PostProductResponse, Object&gt; response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;VERIFIED POST REQUEST SENT&quot;,
+&nbsp;                responseData,
+&nbsp;                null
+&nbsp;        );
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Get seller profile&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Retrieves the profile information of the currently authenticated seller.  
+&nbsp;                        The frontend only needs to send the JWT access token in the `Authorization` header;  
+&nbsp;                        the system identifies the seller automatically from the token.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The client sends a `GET /seller/profile` request with an Authorization header:  
+&nbsp;                           `Authorization: Bearer &lt;access_token&gt;`
+&nbsp;                        2. The system verifies the access token and identifies the seller.
+&nbsp;                        3. The seller’s profile details are fetched and returned in the response.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Displaying seller account details in their dashboard or settings.
+&nbsp;                        - Allowing sellers to view their store and verification status.
+&nbsp;                        - Returning only the seller’s own profile based on token authentication.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - Requires a valid JWT token with `ROLE_SELLER`.
+&nbsp;                        - Each seller can only access their own profile.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @GetMapping(&quot;/profile&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getProfile() {
+&nbsp;        try {
+<b class="nc">&nbsp;            Seller seller = sellerService.getCurrentUser();</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(true,</b>
+&nbsp;                    &quot;Get seller profile successfully.&quot;,
+<b class="nc">&nbsp;                    sellerMapper.toDto(seller),</b>
+&nbsp;                    null));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.internalServerError().body(responseMapper.toDto(false,</b>
+&nbsp;                    &quot;Error occured during get seller profile,&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Get all product posts created by the authenticated seller&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint retrieves a list of all products (posts) that were created by the currently authenticated seller account.
+&nbsp;                    
+&nbsp;                    The API identifies the seller based on the authentication token (JWT or session context) included in the request header.
+&nbsp;                    It returns a list of product posts that belong exclusively to that seller.
+&nbsp;                    
+&nbsp;                    **Usage notes:**
+&nbsp;                    - Only users with a **Seller** role can access this endpoint.
+&nbsp;                    - Each returned post contains product information such as title, price, quantity, description, and creation date.
+&nbsp;                    - Supports pagination and filtering (if applicable).
+&nbsp;                    
+&nbsp;                    **Authentication:** Required (Bearer Token)
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @GetMapping(&quot;/seller-post&quot;)
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_SELLER&#39;, &#39;ROLE_BUYER&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getAllPostBySeller(
+&nbsp;            @RequestParam(name = &quot;page&quot;, defaultValue = &quot;0&quot;) int page,
+&nbsp;            @RequestParam(name = &quot;size&quot;, defaultValue = &quot;10&quot;) int size) {
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Post Product Controller] Started get all post by seller.&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        Seller seller = sellerService.getCurrentUser();</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Post Product Controller] Seller: {}&quot;, seller.getSellerName());</b>
+&nbsp;
+<b class="nc">&nbsp;        Page&lt;PostProduct&gt; posts = postProductService.getAllPostBySeller(seller, page, size);</b>
+<b class="nc">&nbsp;        Page&lt;PostProductResponse&gt; responsePage = postProductMapper.toDtoPage(posts);</b>
+&nbsp;
+<b class="nc">&nbsp;        return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;GET POST PRODUCT BY SELLER SUCCESSFULLY.&quot;,
+&nbsp;                responsePage, null
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Retrieve all pending orders for the current seller&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint returns a paginated list of orders that are currently in **PENDING** status
+&nbsp;                    and belong to the authenticated seller.
+&nbsp;                    
+&nbsp;                    - It requires the user to be logged in as a seller.
+&nbsp;                    - Each order in the response is mapped to the `OrderResponse` DTO.
+&nbsp;                    - Pagination is supported using the `page` and `size` query parameters.
+&nbsp;                    
+&nbsp;                    **Use case:**  
+&nbsp;                    Sellers can use this endpoint to track customer orders that have been placed
+&nbsp;                    but not yet processed, shipped, or completed.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @GetMapping(&quot;/pending-orders&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getAllPendingOrders(
+&nbsp;            @RequestParam(name = &quot;page&quot;, defaultValue = &quot;0&quot;) int page,
+&nbsp;            @RequestParam(name = &quot;size&quot;, defaultValue = &quot;10&quot;) int size
+&nbsp;    ) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Seller seller = sellerService.getCurrentUser();</b>
+<b class="nc">&nbsp;            Page&lt;Order&gt; pendingOrder = orderService.getPendingOrders(seller, page, size);</b>
+<b class="nc">&nbsp;            Page&lt;OrderResponse&gt; response = pendingOrder.map(orderMapper::toDto);</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;GET ALL PENDING ORDER SUCCESSFULLY.&quot;,
+&nbsp;                    response, null
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;GET ALL PENDING ORDER FAILED.&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Seller accepts (verifies) a pending order&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint allows the **authenticated seller** to verify or accept a customer&#39;s pending order.
+&nbsp;                    
+&nbsp;                    - The seller must own the product (PostProduct) associated with the order.
+&nbsp;                    - Once verified, the order status will change from **PENDING** to **VERIFIED**.
+&nbsp;                    - This action signifies that the seller agrees to fulfill the order and proceed to the shipping or payment phase.
+&nbsp;                    - If the order is not found, does not belong to the seller, or has already been processed (not pending), an appropriate error will be returned.
+&nbsp;                    
+&nbsp;                    **Use case:**  
+&nbsp;                    Sellers use this endpoint to approve customer orders before shipment or payment confirmation.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/verify-order/{orderId}&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; verifyPendingOrder(@PathVariable(name = &quot;orderId&quot;) long id) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Order order = orderService.verifyOrder(id);</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;VERIFY ORDER SUCCESSFULLY&quot;,
+<b class="nc">&nbsp;                    orderMapper.toDto(order), null</b>
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;VERIFY ORDER FAILED&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Retrieve paginated list of sellers&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint allows a **seller** to retrieve a paginated list of all sellers registered on the platform. 
+&nbsp;                    It supports pagination parameters (`page`, `size`) to manage large data sets efficiently.
+&nbsp;                    
+&nbsp;                    **Access Control:** Only users with the role `ROLE_SELLER` are authorized to access this endpoint.
+&nbsp;                    
+&nbsp;                    **Response:**
+&nbsp;                    - On success: Returns a paginated list of `SellerResponse` objects containing seller details.
+&nbsp;                    - On failure: Returns an error response with a failure message and exception details.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ROLE_ADMIN&#39;)&quot;)
+&nbsp;    @GetMapping(&quot;/list&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getSellerList(
+&nbsp;            @RequestParam(name = &quot;page&quot;, defaultValue = &quot;0&quot;) int page,
+&nbsp;            @RequestParam(name = &quot;size&quot;, defaultValue = &quot;10&quot;) int size
+&nbsp;    ) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Page&lt;Seller&gt; sellers = sellerService.getSellerList(page, size);</b>
+<b class="nc">&nbsp;            Page&lt;SellerResponse&gt; response = sellers.map(sellerMapper::toDto);</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;GET SELLER LIST SUCCESSFULLY.&quot;,
+&nbsp;                    response, null
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;GET SELLER LIST FAILED.&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

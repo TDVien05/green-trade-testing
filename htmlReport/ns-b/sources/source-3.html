@@ -1,0 +1,270 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > InvoiceUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.util</a>
+</div>
+
+<h1>Coverage Summary for Class: InvoiceUtils (Green_trade.green_trade_platform.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InvoiceUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.2%
+  </span>
+  <span class="absValue">
+    (1/86)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.util;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.model.*;
+&nbsp;import Green_trade.green_trade_platform.service.implement.CloudinaryService;
+&nbsp;import com.lowagie.text.*;
+&nbsp;import com.lowagie.text.pdf.PdfPCell;
+&nbsp;import com.lowagie.text.pdf.PdfPTable;
+&nbsp;import com.lowagie.text.pdf.PdfWriter;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.io.FileOutputStream;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.nio.file.Files;
+&nbsp;import java.nio.file.Path;
+&nbsp;import java.nio.file.Paths;
+&nbsp;import java.time.format.DateTimeFormatter;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@Component
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;public class InvoiceUtils {
+&nbsp;
+&nbsp;    private final CloudinaryService cloudinaryService;
+&nbsp;
+<b class="nc">&nbsp;    public InvoiceUtils(CloudinaryService cloudinaryService) {</b>
+<b class="nc">&nbsp;        this.cloudinaryService = cloudinaryService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static final String TEMP_DIR = &quot;invoices/&quot;;
+&nbsp;
+&nbsp;    public String generateInvoicePDFAndUpload(Invoice invoice) {
+&nbsp;        try {
+&nbsp;            // 1️⃣ Tạo thư mục tạm nếu chưa có
+<b class="nc">&nbsp;            Files.createDirectories(Paths.get(TEMP_DIR));</b>
+&nbsp;
+<b class="nc">&nbsp;            String fileName = &quot;invoice_&quot; + invoice.getInvoiceNumber() + &quot;.pdf&quot;;</b>
+<b class="nc">&nbsp;            String filePath = TEMP_DIR + fileName;</b>
+&nbsp;
+<b class="nc">&nbsp;            Path tempDirPath = Paths.get(TEMP_DIR).toAbsolutePath();</b>
+<b class="nc">&nbsp;            log.info(&quot;📂 Đường dẫn tuyệt đối tới thư mục hóa đơn: {}&quot;, tempDirPath);</b>
+&nbsp;
+&nbsp;            // 2️⃣ Sinh file PDF cục bộ
+<b class="nc">&nbsp;            Document document = new Document(PageSize.A4, 36, 36, 72, 36);</b>
+<b class="nc">&nbsp;            PdfWriter.getInstance(document, new FileOutputStream(filePath));</b>
+<b class="nc">&nbsp;            document.open();</b>
+&nbsp;
+<b class="nc">&nbsp;            Font titleFont = new Font(Font.HELVETICA, 20, Font.BOLD);</b>
+<b class="nc">&nbsp;            Paragraph header = new Paragraph(&quot;GREEN TRADING PLATFORM - HÓA ĐƠN MUA BÁN&quot;, titleFont);</b>
+<b class="nc">&nbsp;            header.setAlignment(Element.ALIGN_CENTER);</b>
+<b class="nc">&nbsp;            document.add(header);</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot; &quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;Mã hóa đơn: &quot; + invoice.getInvoiceNumber()));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;Ngày lập: &quot; +</b>
+<b class="nc">&nbsp;                    invoice.getCreatedAt().format(DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy&quot;))));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot; &quot;));</b>
+&nbsp;
+&nbsp;            // === Người mua ===
+<b class="nc">&nbsp;            Buyer buyer = invoice.getOrder().getBuyer();</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;NGƯỜI MUA HÀNG&quot;, new Font(Font.HELVETICA, 14, Font.BOLD)));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;Tên: &quot; + buyer.getFullName()));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;Email: &quot; + buyer.getEmail()));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;SĐT: &quot; + buyer.getPhoneNumber()));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;Địa chỉ: &quot; +</b>
+<b class="nc">&nbsp;                    buyer.getStreet() + &quot;, &quot; +</b>
+<b class="nc">&nbsp;                    buyer.getWardName() + &quot;, &quot; +</b>
+<b class="nc">&nbsp;                    buyer.getDistrictName() + &quot;, &quot; +</b>
+<b class="nc">&nbsp;                    buyer.getProvinceName()));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot; &quot;));</b>
+&nbsp;
+&nbsp;            // === Người bán ===
+<b class="nc">&nbsp;            Seller seller = invoice.getOrder().getPostProduct().getSeller();</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;NGƯỜI BÁN HÀNG&quot;, new Font(Font.HELVETICA, 14, Font.BOLD)));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;Cửa hàng: &quot; + seller.getStoreName()));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;Tên người bán: &quot; + seller.getSellerName()));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;Mã số thuế: &quot; + seller.getTaxNumber()));</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot; &quot;));</b>
+&nbsp;
+&nbsp;            // === Thông tin sản phẩm ===
+<b class="nc">&nbsp;            PostProduct product = invoice.getOrder().getPostProduct();</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;THÔNG TIN SẢN PHẨM&quot;, new Font(Font.HELVETICA, 14, Font.BOLD)));</b>
+&nbsp;
+<b class="nc">&nbsp;            PdfPTable table = new PdfPTable(2);</b>
+<b class="nc">&nbsp;            table.setWidthPercentage(100);</b>
+<b class="nc">&nbsp;            table.addCell(&quot;Tên sản phẩm&quot;);</b>
+<b class="nc">&nbsp;            table.addCell(product.getTitle());</b>
+<b class="nc">&nbsp;            table.addCell(&quot;Thương hiệu&quot;);</b>
+<b class="nc">&nbsp;            table.addCell(product.getBrand());</b>
+<b class="nc">&nbsp;            table.addCell(&quot;Mẫu xe&quot;);</b>
+<b class="nc">&nbsp;            table.addCell(product.getModel());</b>
+<b class="nc">&nbsp;            table.addCell(&quot;Năm SX&quot;);</b>
+<b class="nc">&nbsp;            table.addCell(String.valueOf(product.getManufactureYear()));</b>
+<b class="nc">&nbsp;            table.addCell(&quot;Tình trạng&quot;);</b>
+<b class="nc">&nbsp;            table.addCell(product.getConditionLevel());</b>
+<b class="nc">&nbsp;            table.addCell(&quot;Mô tả&quot;);</b>
+<b class="nc">&nbsp;            table.addCell(product.getDescription());</b>
+<b class="nc">&nbsp;            document.add(table);</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot; &quot;));</b>
+&nbsp;
+&nbsp;            // === Giá trị hóa đơn ===
+<b class="nc">&nbsp;            BigDecimal basePrice = product.getPrice();</b>
+<b class="nc">&nbsp;            BigDecimal shipping = invoice.getOrder().getShippingFee() != null</b>
+<b class="nc">&nbsp;                    ? invoice.getOrder().getShippingFee() : BigDecimal.ZERO;</b>
+<b class="nc">&nbsp;            BigDecimal taxAmount = basePrice.multiply(BigDecimal.valueOf(invoice.getTaxRate() / 100));</b>
+<b class="nc">&nbsp;            BigDecimal total = basePrice.add(shipping).add(taxAmount);</b>
+&nbsp;
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;TỔNG KẾT&quot;, new Font(Font.HELVETICA, 14, Font.BOLD)));</b>
+<b class="nc">&nbsp;            PdfPTable priceTable = new PdfPTable(2);</b>
+<b class="nc">&nbsp;            priceTable.setWidthPercentage(100);</b>
+<b class="nc">&nbsp;            priceTable.addCell(&quot;Giá sản phẩm&quot;);</b>
+<b class="nc">&nbsp;            priceTable.addCell(formatCurrency(basePrice));</b>
+<b class="nc">&nbsp;            priceTable.addCell(&quot;Phí vận chuyển&quot;);</b>
+<b class="nc">&nbsp;            priceTable.addCell(formatCurrency(shipping));</b>
+<b class="nc">&nbsp;            priceTable.addCell(&quot;Thuế VAT (&quot; + invoice.getTaxRate() + &quot;%)&quot;);</b>
+<b class="nc">&nbsp;            priceTable.addCell(formatCurrency(taxAmount));</b>
+<b class="nc">&nbsp;            priceTable.addCell(&quot;Tổng cộng&quot;);</b>
+<b class="nc">&nbsp;            PdfPCell totalCell = new PdfPCell(new Phrase(formatCurrency(total)));</b>
+<b class="nc">&nbsp;            totalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);</b>
+<b class="nc">&nbsp;            priceTable.addCell(totalCell);</b>
+<b class="nc">&nbsp;            document.add(priceTable);</b>
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot; &quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            document.add(new Paragraph(&quot;CẢM ƠN ĐÃ TIN TƯỞNG LỰA CHỌN GREEN TRADE PLATFORM&quot;,</b>
+&nbsp;                    new Font(Font.HELVETICA, 12, Font.ITALIC)));
+&nbsp;            document.close();
+&nbsp;
+&nbsp;            // 3️⃣ Upload trực tiếp file PDF lên Cloudinary (không cần MultipartFile)
+<b class="nc">&nbsp;            File pdfFile = new File(filePath);</b>
+<b class="nc">&nbsp;            Map&lt;String, String&gt; uploadResult = cloudinaryService.uploadFile(pdfFile, &quot;invoices/&quot; + invoice.getInvoiceNumber() + &quot;-&quot; + invoice.getOrder().getOrderCode());</b>
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [InvoiceUtils] uploadResult: {}&quot;, uploadResult);</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;            String cloudUrl = (String) uploadResult.get(&quot;fileUrl&quot;);</b>
+&nbsp;
+&nbsp;            // 4️⃣ Cập nhật lại Invoice
+<b class="nc">&nbsp;            invoice.setPdfUrl(cloudUrl);</b>
+&nbsp;
+&nbsp;            // 5️⃣ Xóa file local sau khi upload
+<b class="nc">&nbsp;            pdfFile.delete();</b>
+&nbsp;
+<b class="nc">&nbsp;            return cloudUrl;</b>
+&nbsp;
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String formatCurrency(BigDecimal value) {
+<b class="nc">&nbsp;        return String.format(&quot;%,.0f VNĐ&quot;, value);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

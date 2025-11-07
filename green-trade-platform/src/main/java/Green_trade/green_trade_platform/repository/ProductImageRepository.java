@@ -1,0 +1,12 @@
+package Green_trade.green_trade_platform.repository;
+
+import Green_trade.green_trade_platform.model.PostProduct;
+import Green_trade.green_trade_platform.model.ProductImage;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
+
+    List<ProductImage> findAllByPostProduct(PostProduct postProduct);
+}

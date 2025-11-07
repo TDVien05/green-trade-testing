@@ -1,0 +1,131 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UploadPostProductRequest</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.request</a>
+</div>
+
+<h1>Coverage Summary for Class: UploadPostProductRequest (Green_trade.green_trade_platform.request)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">UploadPostProductRequest</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.request;
+&nbsp;
+&nbsp;import jakarta.validation.constraints.*;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.Builder;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.NoArgsConstructor;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;
+&nbsp;@Data
+&nbsp;@Builder
+&nbsp;@NoArgsConstructor
+&nbsp;@AllArgsConstructor
+&nbsp;public class UploadPostProductRequest {
+&nbsp;    @NotNull(message = &quot;Seller Id is required&quot;)
+&nbsp;    @Positive(message = &quot;Seller Id must be positive&quot;)
+&nbsp;    private Long sellerId;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Title is required&quot;)
+&nbsp;    @Size(max = 100, message = &quot;Title must not exceed 100 characters&quot;)
+&nbsp;    private String title;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Brand is required&quot;)
+&nbsp;    @Size(max = 50, message = &quot;Brand must not exceed 50 characters&quot;)
+&nbsp;    private String brand;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Model is required&quot;)
+&nbsp;    @Size(max = 50, message = &quot;Model must not exceed 50 characters&quot;)
+&nbsp;    private String model;
+&nbsp;
+&nbsp;    @NotNull(message = &quot;Manufacture Year is required&quot;)
+&nbsp;    @Min(value = 1900, message = &quot;Manufacture Year must be later than 1900&quot;)
+&nbsp;    @Max(value = 2100, message = &quot;Manufacture Year seems invalid&quot;)
+&nbsp;    private Long manufactureYear;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Used Duration is required&quot;)
+&nbsp;    private String usedDuration;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Condition Level is required&quot;)
+&nbsp;    private String conditionLevel;
+&nbsp;
+&nbsp;    @Positive(message = &quot;Price must be greater than zero&quot;)
+&nbsp;    private BigDecimal price;
+&nbsp;
+&nbsp;    private String length;
+&nbsp;
+&nbsp;    private String width;
+&nbsp;
+&nbsp;    private String height;
+&nbsp;
+&nbsp;    private String weight;
+&nbsp;
+&nbsp;    @Size(max = 1000, message = &quot;Description cannot exceed 1000 characters&quot;)
+&nbsp;    private String description;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Location Trading is required&quot;)
+&nbsp;    private String locationTrading;
+&nbsp;
+&nbsp;    @NotNull(message = &quot;Category Id is required&quot;)
+&nbsp;    @Positive(message = &quot;Category Id must be positive&quot;)
+&nbsp;    private Long categoryId;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

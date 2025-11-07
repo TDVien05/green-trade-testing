@@ -1,0 +1,214 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > WalletTransactionServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: WalletTransactionServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WalletTransactionServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (55/55)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.TransactionStatus;
+&nbsp;import Green_trade.green_trade_platform.enumerate.TransactionType;
+&nbsp;import Green_trade.green_trade_platform.model.Buyer;
+&nbsp;import Green_trade.green_trade_platform.model.Order;
+&nbsp;import Green_trade.green_trade_platform.model.Wallet;
+&nbsp;import Green_trade.green_trade_platform.model.WalletTransaction;
+&nbsp;import Green_trade.green_trade_platform.repository.BuyerRepository;
+&nbsp;import Green_trade.green_trade_platform.repository.WalletTransactionRepository;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;public class WalletTransactionServiceImpl {
+&nbsp;    private final WalletTransactionRepository walletTransactionRepository;
+&nbsp;    private final BuyerRepository buyerRepository;
+&nbsp;
+<b class="fc">&nbsp;    public WalletTransactionServiceImpl(WalletTransactionRepository walletTransactionRepository, BuyerRepository buyerRepository) {</b>
+<b class="fc">&nbsp;        this.walletTransactionRepository = walletTransactionRepository;</b>
+<b class="fc">&nbsp;        this.buyerRepository = buyerRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public WalletTransaction handleDepositIntoMoney(Wallet wallet, Map&lt;String, String&gt; params) {
+&nbsp;        try {
+<b class="fc">&nbsp;            String amountTemp = params.get(&quot;vnp_Amount&quot;);</b>
+<b class="fc">&nbsp;            long amount = Long.parseLong(amountTemp) / 100;</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Amount of transaction: {}&quot;, amount);</b>
+<b class="fc">&nbsp;            WalletTransaction walletTransaction = WalletTransaction.builder()</b>
+<b class="fc">&nbsp;                    .type(TransactionType.DEPOSIT)</b>
+<b class="fc">&nbsp;                    .amount(BigDecimal.valueOf(amount))</b>
+<b class="fc">&nbsp;                    .balanceBefore(wallet.getBalance())</b>
+<b class="fc">&nbsp;                    .status(TransactionStatus.SUCCESS)</b>
+<b class="fc">&nbsp;                    .description(&quot;Deposit money into user&#39;s wallet.&quot;)</b>
+<b class="fc">&nbsp;                    .externalTransactionReference(params.get(&quot;vnp_TxnRef&quot;))</b>
+<b class="fc">&nbsp;                    .wallet(wallet)</b>
+<b class="fc">&nbsp;                    .build();</b>
+<b class="fc">&nbsp;            return walletTransactionRepository.save(walletTransaction);</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Exception when deposit money into wallet: {}&quot;, e.getMessage());</b>
+<b class="fc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public WalletTransaction handleSignPackageForSeller(Wallet wallet, double amount) {
+&nbsp;        try {
+<b class="fc">&nbsp;            WalletTransaction walletTransaction = WalletTransaction.builder()</b>
+<b class="fc">&nbsp;                    .wallet(wallet)</b>
+<b class="fc">&nbsp;                    .type(TransactionType.SIGN_PACKAGE)</b>
+<b class="fc">&nbsp;                    .amount(BigDecimal.valueOf(amount).negate())</b>
+<b class="fc">&nbsp;                    .balanceBefore(wallet.getBalance())</b>
+<b class="fc">&nbsp;                    .status(TransactionStatus.SUCCESS)</b>
+<b class="fc">&nbsp;                    .externalTransactionReference(&quot;None&quot;)</b>
+<b class="fc">&nbsp;                    .build();</b>
+<b class="fc">&nbsp;            return walletTransactionRepository.save(walletTransaction);</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Exception when minus money from wallet to sign package: {}&quot;, e.getMessage());</b>
+<b class="fc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public WalletTransaction handleRefundMoney(Wallet wallet, BigDecimal money, boolean isRefund, String description) {
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Wallet Transaction Service] Handling refund money: Started.&quot;);</b>
+&nbsp;        try {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Wallet Transaction Service] Started to create wallet transaction.&quot;);</b>
+<b class="fc">&nbsp;            WalletTransaction walletTransaction = null;</b>
+<b class="fc">&nbsp;            if (isRefund) {</b>
+<b class="fc">&nbsp;                walletTransaction = WalletTransaction.builder()</b>
+<b class="fc">&nbsp;                        .wallet(wallet)</b>
+<b class="fc">&nbsp;                        .type(TransactionType.REFUND)</b>
+<b class="fc">&nbsp;                        .amount(money)</b>
+<b class="fc">&nbsp;                        .balanceBefore(wallet.getBalance())</b>
+<b class="fc">&nbsp;                        .status(TransactionStatus.SUCCESS)</b>
+<b class="fc">&nbsp;                        .externalTransactionReference(&quot;None&quot;)</b>
+<b class="fc">&nbsp;                        .description(description)</b>
+<b class="fc">&nbsp;                        .build();</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                walletTransaction = WalletTransaction.builder()</b>
+<b class="fc">&nbsp;                        .wallet(wallet)</b>
+<b class="fc">&nbsp;                        .type(TransactionType.DEPOSIT)</b>
+<b class="fc">&nbsp;                        .amount(money)</b>
+<b class="fc">&nbsp;                        .balanceBefore(wallet.getBalance())</b>
+<b class="fc">&nbsp;                        .status(TransactionStatus.SUCCESS)</b>
+<b class="fc">&nbsp;                        .externalTransactionReference(&quot;None&quot;)</b>
+<b class="fc">&nbsp;                        .description(&quot;Get money from order&quot;)</b>
+<b class="fc">&nbsp;                        .build();</b>
+&nbsp;            }
+<b class="fc">&nbsp;            return walletTransactionRepository.save(walletTransaction);</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Wallet Transaction Service] Error occur when handle refund money: {}&quot;, e.getMessage());</b>
+<b class="fc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-07 21:16</div>
+</div>
+</body>
+</html>

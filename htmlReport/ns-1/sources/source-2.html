@@ -1,0 +1,285 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AuthServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: AuthServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AuthServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.2%
+  </span>
+  <span class="absValue">
+    (15/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (57/76)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.exception.AuthException;
+&nbsp;import Green_trade.green_trade_platform.exception.PasswordMismatchException;
+&nbsp;import Green_trade.green_trade_platform.exception.UsernameException;
+&nbsp;import Green_trade.green_trade_platform.model.Admin;
+&nbsp;import Green_trade.green_trade_platform.model.Buyer;
+&nbsp;import Green_trade.green_trade_platform.repository.AdminRepository;
+&nbsp;import Green_trade.green_trade_platform.repository.BuyerRepository;
+&nbsp;import Green_trade.green_trade_platform.request.ChangePasswordRequest;
+&nbsp;import Green_trade.green_trade_platform.request.ForgotPasswordRequest;
+&nbsp;import Green_trade.green_trade_platform.request.VerifyOtpForgotPasswordRequest;
+&nbsp;import Green_trade.green_trade_platform.service.AuthService;
+&nbsp;import Green_trade.green_trade_platform.util.JwtUtils;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.security.core.userdetails.UsernameNotFoundException;
+&nbsp;import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@AllArgsConstructor
+&nbsp;public class AuthServiceImpl implements AuthService {
+&nbsp;    private final BuyerRepository buyerRepository;
+&nbsp;    private final OtpServiceImpl otpService;
+&nbsp;    private final RedisOtpService redisOtpService;
+&nbsp;    private final DelegatingPasswordEncoder passwordEncoder;
+&nbsp;    private final JwtUtils jwtUtils;
+&nbsp;    private final AdminRepository adminRepository;
+&nbsp;    private final RedisTokenService redisTokenService;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Map&lt;String, Object&gt; verifyUsernameForgotPassword(String username) throws Exception {
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</b>
+&nbsp;        try {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; username from request: {}&quot;, username);</b>
+<b class="fc">&nbsp;            Optional&lt;Buyer&gt; buyerOpt = buyerRepository.findByUsername(username);</b>
+<b class="fc">&nbsp;            if (buyerOpt.isEmpty()) {</b>
+<b class="fc">&nbsp;                throw new UsernameException(&quot;Username is not existed&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Username is existed&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            String otp = otpService.generateOtpCode();</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; OTP: {}&quot;, otp);</b>
+&nbsp;
+<b class="fc">&nbsp;            redisOtpService.savePending(buyerOpt.get().getUsername(), buyerOpt.get().getEmail(), otp);</b>
+<b class="fc">&nbsp;            otpService.sendOtpEmail(buyerOpt.get().getEmail(), otp);</b>
+&nbsp;
+<b class="fc">&nbsp;            result.put(&quot;success&quot;, true);</b>
+<b class="fc">&nbsp;            result.put(&quot;message&quot;, &quot;Username exits.&quot;);</b>
+<b class="fc">&nbsp;            result.put(&quot;data&quot;, buyerOpt.get());</b>
+<b class="fc">&nbsp;            result.put(&quot;error&quot;, null);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Error at verifyForgotPassword: &quot; + e);</b>
+<b class="fc">&nbsp;            result.put(&quot;success&quot;, false);</b>
+<b class="fc">&nbsp;            result.put(&quot;message&quot;, &quot;Username is not exits.&quot;);</b>
+<b class="fc">&nbsp;            result.put(&quot;data&quot;, null);</b>
+<b class="fc">&nbsp;            result.put(&quot;error&quot;, e);</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void verifyOtpForgotPassword(VerifyOtpForgotPasswordRequest request) {
+<b class="fc">&nbsp;        Map&lt;String, String&gt; pending = redisOtpService.getPending(request.getEmail());</b>
+<b class="fc">&nbsp;        if (pending == null) {</b>
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Invalid email or user did not forget password yet!&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed pending is not null&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        String otp = pending.get(&quot;otp&quot;);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Otp From User: {}&quot;, request.getOtp());</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Otp Redis: {}&quot;, otp);</b>
+<b class="pc">&nbsp;        if (!request.getOtp().equals(otp)) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Otp are not the same!&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed Otp matched&quot;);</b>
+<b class="fc">&nbsp;        redisOtpService.deletePending(request.getEmail());</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed delete pending on redis&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Buyer forgotPassword(ForgotPasswordRequest request) throws Exception {
+&nbsp;        try {
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Executed forgotPassword&quot;);</b>
+<b class="nc">&nbsp;            Optional&lt;Buyer&gt; buyerOpt = buyerRepository.findByUsername(request.getUsername());</b>
+<b class="nc">&nbsp;            if (buyerOpt.isEmpty()) {</b>
+<b class="nc">&nbsp;                throw new UsernameException(&quot;Username is not existed&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Username is existed&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            if (!request.getNewPassword().equals(request.getConfirmPassword())) {</b>
+<b class="nc">&nbsp;                throw new PasswordMismatchException();</b>
+&nbsp;            }
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Password and Confirm Password is matched&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            String updatePassword = passwordEncoder.encode(request.getNewPassword());</b>
+<b class="nc">&nbsp;            buyerOpt.get().setPassword(updatePassword);</b>
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Updated new password successfully&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            return buyerRepository.save(buyerOpt.get());</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Error at forgotPassword: &quot; + e);</b>
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Buyer changePassword(ChangePasswordRequest request) throws Exception {
+&nbsp;        try {
+<b class="fc">&nbsp;            Buyer buyer = buyerRepository.findByUsername(request.getUsername()).orElseThrow(</b>
+<b class="nc">&nbsp;                    () -&gt; new RuntimeException(&quot;Buyer is not Existed&quot;)</b>
+&nbsp;            );
+&nbsp;
+<b class="fc">&nbsp;            boolean isPasswordMatched = passwordEncoder.matches(request.getOldPassword(), buyer.getPassword());</b>
+<b class="pc">&nbsp;            if (!isPasswordMatched) {</b>
+<b class="nc">&nbsp;                throw new Exception(&quot;Password is incorrect&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            boolean isConfirmPasswordMatched = request.getNewPassword().equals(request.getConfirmPassword());</b>
+<b class="pc">&nbsp;            if (!isConfirmPasswordMatched) {</b>
+<b class="nc">&nbsp;                throw new PasswordMismatchException();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            String newHashPassword = passwordEncoder.encode(request.getNewPassword());</b>
+<b class="fc">&nbsp;            buyer.setPassword(newHashPassword);</b>
+&nbsp;
+<b class="fc">&nbsp;            return buyerRepository.save(buyer);</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Error at changePassword: &quot; + e.getMessage());</b>
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; refreshToken(HttpServletRequest request) {
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        String authHeader = request.getHeader(&quot;Authorization&quot;);</b>
+<b class="fc">&nbsp;        if (authHeader == null || !authHeader.startsWith(&quot;Bearer &quot;)) {</b>
+<b class="fc">&nbsp;            throw new AuthException(&quot;Unauthorized account.&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        String refreshToken = authHeader.substring(7);</b>
+<b class="fc">&nbsp;        result.put(&quot;refresh_token&quot;, refreshToken);</b>
+&nbsp;
+<b class="fc">&nbsp;        if (!jwtUtils.verifyToken(refreshToken)) {</b>
+<b class="fc">&nbsp;            throw new AuthException(&quot;Invalid refresh token, sign in to get new one&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        String username = jwtUtils.getUsernameFromToken(refreshToken);</b>
+<b class="fc">&nbsp;        if (username.matches(&quot;^\\d{10}$&quot;)) {</b>
+<b class="fc">&nbsp;            Admin admin = adminRepository.findByEmployeeNumber(username).orElseThrow(</b>
+<b class="nc">&nbsp;                    () -&gt; new UsernameNotFoundException(&quot;Can not find user with this refresh token.&quot;)</b>
+&nbsp;            );
+<b class="fc">&nbsp;            result.put(&quot;admin&quot;, admin);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            Buyer buyer = buyerRepository.findByUsername(username).orElseThrow(</b>
+<b class="fc">&nbsp;                    () -&gt; new UsernameNotFoundException(&quot;Can not find user with this refresh token.&quot;)</b>
+&nbsp;            );
+<b class="fc">&nbsp;            result.put(&quot;buyer&quot;, buyer);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-07 21:16</div>
+</div>
+</body>
+</html>

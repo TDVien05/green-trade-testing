@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > OrderServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: OrderServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OrderServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (12/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (6/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.5%
+  </span>
+  <span class="absValue">
+    (77/87)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.OrderStatus;
+&nbsp;import Green_trade.green_trade_platform.enumerate.TransactionStatus;
+&nbsp;import Green_trade.green_trade_platform.exception.OrderNotFound;
+&nbsp;import Green_trade.green_trade_platform.model.*;
+&nbsp;import Green_trade.green_trade_platform.repository.CancelOrderReasonRepository;
+&nbsp;import Green_trade.green_trade_platform.repository.OrderRepository;
+&nbsp;import Green_trade.green_trade_platform.repository.TransactionRepository;
+&nbsp;import Green_trade.green_trade_platform.request.CancelOrderRequest;
+&nbsp;import Green_trade.green_trade_platform.service.OrderService;
+&nbsp;import Green_trade.green_trade_platform.service.TransactionService;
+&nbsp;import jakarta.persistence.EntityNotFoundException;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.data.domain.*;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@AllArgsConstructor
+&nbsp;public class OrderServiceImpl implements OrderService {
+&nbsp;
+&nbsp;    private final OrderRepository orderRepository;
+&nbsp;    private final TransactionServiceImpl transactionService;
+&nbsp;    private final GhnServiceImpl ghnServiceImpl;
+&nbsp;    private final WalletTransactionServiceImpl walletTransactionServiceImpl;
+&nbsp;    private final WalletServiceImpl walletService;
+&nbsp;    private final TransactionRepository transactionRepository;
+&nbsp;    private final CancelOrderReasonRepository cancelOrderReasonRepository;
+&nbsp;
+&nbsp;    public Page&lt;Order&gt; getOrdersOfCurrentUserPaging(int size, int page, Buyer buyer) {
+&nbsp;        try {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] camed getOrdersOfCurrentUserPaging&quot;);</b>
+<b class="fc">&nbsp;            Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;id&quot;));</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] created pageable successfully&quot;);</b>
+<b class="fc">&nbsp;            Page&lt;Order&gt; ordersPage = orderRepository.findAllByBuyer(buyer, pageable);</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] created orderPage successfully&quot;);</b>
+<b class="fc">&nbsp;            return new PageImpl&lt;&gt;(ordersPage.getContent(), pageable, ordersPage.getTotalElements());</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Error at getOrdersOfCurrentUserPaging: {}&quot;, e.getMessage());</b>
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; saveOrder(Order newOrder) {
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; start save order service&quot;);</b>
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();</b>
+&nbsp;        try {
+<b class="fc">&nbsp;            Order order = orderRepository.save(newOrder);</b>
+<b class="fc">&nbsp;            data.put(&quot;success&quot;, true);</b>
+<b class="fc">&nbsp;            data.put(&quot;message&quot;, &quot;save order successfully.&quot;);</b>
+<b class="fc">&nbsp;            data.put(&quot;data&quot;, order);</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            data.put(&quot;success&quot;, false);</b>
+<b class="fc">&nbsp;            data.put(&quot;message&quot;, e.getMessage());</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; save order service: {}&quot;, data.toString());</b>
+<b class="fc">&nbsp;        return data;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order updateOrderCode(String orderCode, Order order) {
+<b class="fc">&nbsp;        order.setOrderCode(orderCode);</b>
+<b class="fc">&nbsp;        return orderRepository.save(order);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order updateSystemWallet(SystemWallet systemWallet, Order order) {
+<b class="fc">&nbsp;        order.setSystemWallet(systemWallet);</b>
+<b class="fc">&nbsp;        return orderRepository.save(order);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order updateOrderTransactions(Order order, List&lt;Transaction&gt; transactions) {
+<b class="fc">&nbsp;        order.setTransactions(transactions);</b>
+<b class="fc">&nbsp;        return orderRepository.save(order);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order updateOrderStatus(Order order, OrderStatus status) {
+<b class="fc">&nbsp;        order.setStatus(status);</b>
+<b class="fc">&nbsp;        return orderRepository.save(order);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order cancelOrder(Long id, CancelOrderRequest request) throws Exception {
+&nbsp;        try {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] came cancelOrder&quot;);</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; request: {}&quot;, request);</b>
+<b class="fc">&nbsp;            Optional&lt;Order&gt; orderOpt = orderRepository.findOrderById((id));</b>
+<b class="fc">&nbsp;            if (orderOpt.isEmpty()) {</b>
+<b class="fc">&nbsp;                throw new OrderNotFound();</b>
+&nbsp;            }
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] found order successfully&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            CancelOrderReason cancelOrderReason = cancelOrderReasonRepository.findById(request.getCancelReasonId())</b>
+<b class="fc">&nbsp;                    .orElseThrow(</b>
+<b class="nc">&nbsp;                            () -&gt; new Exception(&quot;Cancel Order Reason Not found&quot;)</b>
+&nbsp;                    );
+&nbsp;
+<b class="fc">&nbsp;            Order orderFound = orderOpt.get();</b>
+&nbsp;
+<b class="fc">&nbsp;            if (orderFound.getStatus().equals(OrderStatus.PENDING)) {</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] order pending status&quot;);</b>
+<b class="fc">&nbsp;                Transaction transaction = transactionService.createTransaction(orderFound, TransactionStatus.CANCELED,</b>
+<b class="fc">&nbsp;                        orderFound.getTransactions().getLast().getPayment()); //transaction không có thì sẽ lỗi, nên lưu ý</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] created transaction successfully&quot;);</b>
+<b class="fc">&nbsp;                orderFound = updateOrderStatus(orderFound, OrderStatus.CANCELED);</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] update order status to canceled successfully&quot;);</b>
+<b class="fc">&nbsp;                orderFound.getPostProduct().setSold(false);</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] update order sold successfully&quot;);</b>
+<b class="fc">&nbsp;                orderFound.setCancelOrderReason(cancelOrderReason);</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] update cancel order reason successfully&quot;);</b>
+<b class="fc">&nbsp;                orderFound.setCanceledAt(LocalDateTime.now());</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] update canceled at successfully&quot;);</b>
+<b class="pc">&nbsp;            } else if (orderFound.getStatus().equals(OrderStatus.PAID)) {</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] order paid status&quot;);</b>
+<b class="fc">&nbsp;                Transaction transaction = transactionService.createTransaction(orderFound, TransactionStatus.CANCELED,</b>
+<b class="fc">&nbsp;                        orderFound.getTransactions().getLast().getPayment());</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] created transaction successfully&quot;);</b>
+<b class="fc">&nbsp;                orderFound = updateOrderStatus(orderFound, OrderStatus.CANCELED);</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] update order status to canceled successfully&quot;);</b>
+<b class="fc">&nbsp;                walletService.handleBuyerRefundForCancelledOrder(orderFound.getSystemWallet(), 100, orderFound.getBuyer().getWallet());</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] refund successfully&quot;);</b>
+<b class="fc">&nbsp;                orderFound.getPostProduct().setSold(false);</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] update order sold successfully&quot;);</b>
+<b class="fc">&nbsp;                orderFound.setCancelOrderReason(cancelOrderReason);</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] update cancel order reason successfully&quot;);</b>
+<b class="fc">&nbsp;                orderFound.setCanceledAt(LocalDateTime.now());</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] update canceled at successfully&quot;);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                throw new Exception(&quot;Cannot cancel order&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            return orderRepository.save(orderFound);</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [OrderServiceImpl] Error at cancelOrder: {}&quot;, e.getMessage());</b>
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Page&lt;Order&gt; getPendingOrders(Seller seller, int page, int size) {
+<b class="nc">&nbsp;        Pageable pageable = PageRequest.of(page, size);</b>
+<b class="nc">&nbsp;        return orderRepository.findByPostProduct_SellerAndStatus(seller, OrderStatus.PENDING, pageable);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order verifyOrder(long id) {
+<b class="fc">&nbsp;        Order order = orderRepository.findById(id).orElseThrow(</b>
+<b class="nc">&nbsp;                () -&gt; new IllegalArgumentException(&quot;Can not find order with this order id: &quot; + id)</b>
+&nbsp;        );
+&nbsp;
+<b class="fc">&nbsp;        order.setStatus(OrderStatus.VERIFIED);</b>
+<b class="fc">&nbsp;        return orderRepository.save(order);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order getOrderById(Long orderId) {
+<b class="fc">&nbsp;        Order result = null;</b>
+<b class="fc">&nbsp;        Optional&lt;Order&gt; orderOpt = orderRepository.findOrderById(orderId);</b>
+<b class="pc">&nbsp;        if (orderOpt.isPresent()) {</b>
+<b class="fc">&nbsp;            result = orderOpt.get();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Transaction getTransactionByOrderId(long id) {
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Order Service] Get transaction by order id: Started.&quot;);</b>
+<b class="fc">&nbsp;        Order order = getOrderById(id);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Order Service] Order info: {}&quot;, order);</b>
+&nbsp;
+<b class="fc">&nbsp;        Transaction transaction = transactionRepository.findValidTransactionsByOrderId(order, TransactionStatus.FAIL).orElseThrow(</b>
+<b class="fc">&nbsp;                () -&gt; new EntityNotFoundException(&quot;Can not find transaction with this order id: &quot; + id)</b>
+&nbsp;        );
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Order Service] Transaction info: {}&quot;, transaction);</b>
+<b class="nc">&nbsp;        return transaction;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Page&lt;Order&gt; getAllOrders(int page, int size, Seller seller) {
+<b class="nc">&nbsp;        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;createdAt&quot;).descending());</b>
+<b class="nc">&nbsp;        return orderRepository.findAllByPostProduct_Seller(seller, pageable);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-07 21:16</div>
+</div>
+</body>
+</html>

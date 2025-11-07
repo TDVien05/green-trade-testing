@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > OtpServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: OtpServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OtpServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.9%
+  </span>
+  <span class="absValue">
+    (10/11)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.exception.EmailException;
+&nbsp;import Green_trade.green_trade_platform.service.OtpService;
+&nbsp;import jakarta.mail.MessagingException;
+&nbsp;import jakarta.mail.internet.MimeMessage;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.mail.javamail.JavaMailSender;
+&nbsp;import org.springframework.mail.javamail.MimeMessageHelper;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.Random;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class OtpServiceImpl implements OtpService {</b>
+&nbsp;    @Autowired
+&nbsp;    private JavaMailSender mailSender;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void sendOtpEmail(String to, String otp) {
+&nbsp;        try {
+<b class="fc">&nbsp;            MimeMessage message = mailSender.createMimeMessage();</b>
+<b class="fc">&nbsp;            MimeMessageHelper helper = new MimeMessageHelper(message, true, &quot;UTF-8&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            helper.setTo(to);</b>
+<b class="fc">&nbsp;            helper.setSubject(&quot;Green Trade Platform - Email Verification OTP&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            String htmlContent = &quot;&quot;&quot;</b>
+&nbsp;                    &lt;!doctype html&gt;
+&nbsp;                    &lt;html lang=&quot;vi&quot;&gt;
+&nbsp;                      &lt;body style=&quot;margin:0; padding:0; background-color:#f5f7fa; font-family:Arial,Helvetica,sans-serif; line-height:1.6;&quot;&gt;
+&nbsp;                        &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;100%%&quot; style=&quot;padding:28px 0; background:#f5f7fa;&quot;&gt;
+&nbsp;                          &lt;tr&gt;
+&nbsp;                            &lt;td align=&quot;center&quot;&gt;
+&nbsp;                              &lt;table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; width=&quot;560&quot; style=&quot;background:#ffffff; border-radius:12px; overflow:hidden;&quot;&gt;
+&nbsp;                                &lt;tr&gt;
+&nbsp;                                  &lt;td style=&quot;background:#2e7d32; color:#ffffff; text-align:center; padding:18px 24px;&quot;&gt;
+&nbsp;                                    &lt;div style=&quot;font-size:18px; font-weight:700;&quot;&gt;Green Trade&lt;/div&gt;
+&nbsp;                                    &lt;div style=&quot;font-size:12px; opacity:.9;&quot;&gt;Xe điện &amp; Pin xe điện&lt;/div&gt;
+&nbsp;                                  &lt;/td&gt;
+&nbsp;                                &lt;/tr&gt;
+&nbsp;                                &lt;tr&gt;
+&nbsp;                                  &lt;td style=&quot;padding:26px 28px;&quot;&gt;
+&nbsp;                                    &lt;div style=&quot;font-size:16px; color:#111827; margin-bottom:10px;&quot;&gt;Chào mừng bạn!&lt;/div&gt;
+&nbsp;                                    &lt;div style=&quot;font-size:14px; color:#4b5563; line-height:1.6;&quot;&gt;
+&nbsp;                                      Vui lòng dùng mã OTP bên dưới để xác minh email của bạn:
+&nbsp;                                    &lt;/div&gt;
+&nbsp;                    
+&nbsp;                                    &lt;div style=&quot;text-align:center; margin:22px 0 10px;&quot;&gt;
+&nbsp;                                      &lt;div style=&quot;display:inline-block; background:#f0fdf4; border:1px solid #ccf1d8; border-radius:10px; padding:14px 24px;&quot;&gt;
+&nbsp;                                        &lt;span style=&quot;font-size:28px; letter-spacing:6px; color:#1b5e20; font-weight:700;&quot;&gt;
+&nbsp;                                          %s
+&nbsp;                                        &lt;/span&gt;
+&nbsp;                                      &lt;/div&gt;
+&nbsp;                                    &lt;/div&gt;
+&nbsp;                    
+&nbsp;                                    &lt;div style=&quot;font-size:13px; color:#6b7280; text-align:center;&quot;&gt;
+&nbsp;                                      Mã có hiệu lực &lt;strong&gt;10 phút&lt;/strong&gt;. Không chia sẻ mã để bảo mật tài khoản.
+&nbsp;                                    &lt;/div&gt;
+&nbsp;                                  &lt;/td&gt;
+&nbsp;                                &lt;/tr&gt;
+&nbsp;                                &lt;tr&gt;
+&nbsp;                                  &lt;td style=&quot;background:#fafafa; border-top:1px solid #f0f0f0; padding:16px 24px; text-align:center; color:#9ca3af; font-size:12px;&quot;&gt;
+&nbsp;                                    © 2025 Green Trade • Năng lượng sạch cho hành trình bền vững
+&nbsp;                                  &lt;/td&gt;
+&nbsp;                                &lt;/tr&gt;
+&nbsp;                              &lt;/table&gt;
+&nbsp;                            &lt;/td&gt;
+&nbsp;                          &lt;/tr&gt;
+&nbsp;                        &lt;/table&gt;
+&nbsp;                      &lt;/body&gt;
+&nbsp;                    &lt;/html&gt;
+<b class="fc">&nbsp;                    &quot;&quot;&quot;.formatted(otp);</b>
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;            helper.setText(htmlContent, true); // true =&gt; gửi dạng HTML</b>
+<b class="fc">&nbsp;            mailSender.send(message);</b>
+&nbsp;        } catch (MessagingException e) {
+<b class="nc">&nbsp;            throw new EmailException(&quot;Failed to send OTP email&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String generateOtpCode() {
+<b class="fc">&nbsp;        return String.format(&quot;%06d&quot;, new Random().nextInt(1_000_000));</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

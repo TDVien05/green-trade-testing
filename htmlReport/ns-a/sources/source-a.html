@@ -1,0 +1,801 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > GhnServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: GhnServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GhnServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37%
+  </span>
+  <span class="absValue">
+    (10/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (14/56)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.3%
+  </span>
+  <span class="absValue">
+    (210/409)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.model.*;
+&nbsp;import Green_trade.green_trade_platform.util.StringUtils;
+&nbsp;import com.fasterxml.jackson.core.JsonProcessingException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.http.*;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.web.client.RestTemplate;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;public class GhnServiceImpl {
+&nbsp;
+&nbsp;    private final StringUtils stringUtils;
+&nbsp;    @Value(&quot;${ghn.token}&quot;)
+&nbsp;    private String TOKEN;
+&nbsp;
+<b class="fc">&nbsp;    public GhnServiceImpl(StringUtils stringUtils) {</b>
+<b class="fc">&nbsp;        this.stringUtils = stringUtils;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String createOrder(Map&lt;String, Object&gt; requestBody, String shopId) {
+<b class="fc">&nbsp;        RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; ghnToken: {}&quot;, TOKEN);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; requestBody in createOrderShippingAPI: {}&quot;, requestBody);</b>
+&nbsp;
+<b class="fc">&nbsp;        HttpHeaders headers = new HttpHeaders();</b>
+<b class="fc">&nbsp;        headers.setContentType(MediaType.APPLICATION_JSON);</b>
+<b class="fc">&nbsp;        headers.set(&quot;Token&quot;, TOKEN);</b>
+<b class="fc">&nbsp;        headers.set(&quot;ShopId&quot;, shopId);</b>
+&nbsp;
+<b class="fc">&nbsp;        HttpEntity&lt;Map&lt;String, Object&gt;&gt; entity = new HttpEntity&lt;&gt;(requestBody, headers);</b>
+&nbsp;
+<b class="fc">&nbsp;        ResponseEntity&lt;String&gt; response = restTemplate.postForEntity(</b>
+&nbsp;                &quot;https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create&quot;, entity, String.class);
+&nbsp;
+<b class="fc">&nbsp;        return response.getBody();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String cancelOrder(Map&lt;String, Object&gt; request, String shopId) {
+<b class="fc">&nbsp;        RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+<b class="fc">&nbsp;        HttpHeaders headers = new HttpHeaders();</b>
+<b class="fc">&nbsp;        headers.setContentType(MediaType.APPLICATION_JSON);</b>
+<b class="fc">&nbsp;        headers.set(&quot;Token&quot;, TOKEN);</b>
+<b class="fc">&nbsp;        headers.set(&quot;ShopId&quot;, shopId);</b>
+&nbsp;
+<b class="fc">&nbsp;        HttpEntity&lt;Map&lt;String, Object&gt;&gt; entity = new HttpEntity&lt;&gt;(request, headers);</b>
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            ResponseEntity&lt;String&gt; response = restTemplate.postForEntity(</b>
+&nbsp;                    &quot;https://dev-online-gateway.ghn.vn/shiip/public-api/v2/switch-status/cancel&quot;, entity, String.class);
+<b class="nc">&nbsp;            return response.getBody();</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            e.printStackTrace();</b>
+<b class="fc">&nbsp;            return &quot;{\&quot;error\&quot;:\&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getOrderDetail(String orderCode) {
+<b class="nc">&nbsp;        RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; ghnToken: {}&quot;, TOKEN);</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; orderCode in getOrderDetail: {}&quot;, orderCode);</b>
+&nbsp;
+&nbsp;        // Body request
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; requestBody = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        requestBody.put(&quot;order_code&quot;, orderCode);</b>
+&nbsp;
+&nbsp;        // Header
+<b class="nc">&nbsp;        HttpHeaders headers = new HttpHeaders();</b>
+<b class="nc">&nbsp;        headers.setContentType(MediaType.APPLICATION_JSON);</b>
+<b class="nc">&nbsp;        headers.set(&quot;Token&quot;, TOKEN);</b>
+&nbsp;
+&nbsp;        // Entity (body + header)
+<b class="nc">&nbsp;        HttpEntity&lt;Map&lt;String, Object&gt;&gt; entity = new HttpEntity&lt;&gt;(requestBody, headers);</b>
+&nbsp;
+&nbsp;        // Gọi API GHN
+<b class="nc">&nbsp;        ResponseEntity&lt;String&gt; response = restTemplate.postForEntity(</b>
+&nbsp;                &quot;https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail&quot;,
+&nbsp;                entity,
+&nbsp;                String.class
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; response from GHN: {}&quot;, response.getBody());</b>
+<b class="nc">&nbsp;        return response.getBody();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; extractLatestOrderStatus(String ghnResponse) {
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</b>
+&nbsp;        try {
+<b class="fc">&nbsp;            ObjectMapper mapper = new ObjectMapper();</b>
+<b class="fc">&nbsp;            JsonNode root = mapper.readTree(ghnResponse);</b>
+&nbsp;
+<b class="fc">&nbsp;            JsonNode dataNode = root.path(&quot;data&quot;);</b>
+&nbsp;            JsonNode orderData;
+&nbsp;
+<b class="pc">&nbsp;            if (dataNode.isArray() &amp;&amp; dataNode.size() &gt; 0) {</b>
+<b class="nc">&nbsp;                orderData = dataNode.get(0);</b>
+<b class="fc">&nbsp;            } else if (dataNode.isObject()) {</b>
+<b class="fc">&nbsp;                orderData = dataNode;</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                log.warn(&quot;&gt;&gt;&gt; GHN response không có data hợp lệ&quot;);</b>
+<b class="fc">&nbsp;                result.put(&quot;status&quot;, &quot;no_data&quot;);</b>
+<b class="fc">&nbsp;                result.put(&quot;message&quot;, &quot;Không có dữ liệu đơn hàng&quot;);</b>
+<b class="fc">&nbsp;                return result;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            JsonNode logs = orderData.path(&quot;log&quot;);</b>
+<b class="fc">&nbsp;            String status = orderData.path(&quot;status&quot;).asText(&quot;&quot;);</b>
+<b class="fc">&nbsp;            String updatedDate = orderData.path(&quot;updated_date&quot;).asText(&quot;&quot;);</b>
+<b class="fc">&nbsp;            String orderCode = orderData.path(&quot;order_code&quot;).asText(&quot;&quot;);</b>
+<b class="fc">&nbsp;            long shopId = orderData.path(&quot;shop_id&quot;).asLong(0);</b>
+&nbsp;
+<b class="pc">&nbsp;            if (logs.isArray() &amp;&amp; logs.size() &gt; 0) {</b>
+<b class="fc">&nbsp;                JsonNode latestLog = logs.get(logs.size() - 1);</b>
+&nbsp;                // Nếu log có status mới nhất thì ưu tiên lấy từ đó
+<b class="fc">&nbsp;                status = latestLog.path(&quot;status&quot;).asText(status);</b>
+<b class="fc">&nbsp;                updatedDate = latestLog.path(&quot;updated_date&quot;).asText(updatedDate);</b>
+&nbsp;            }
+&nbsp;
+<b class="pc">&nbsp;            result.put(&quot;status&quot;, status.isEmpty() ? &quot;unknown&quot; : status);</b>
+<b class="fc">&nbsp;            result.put(&quot;updated_date&quot;, updatedDate);</b>
+<b class="fc">&nbsp;            result.put(&quot;order_code&quot;, orderCode);</b>
+<b class="fc">&nbsp;            result.put(&quot;shop_id&quot;, shopId);</b>
+<b class="fc">&nbsp;            result.put(&quot;message&quot;, &quot;Success&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Trạng thái mới nhất: {} (updated_date: {} | order_code: {} | shop_id: {})&quot;,</b>
+<b class="fc">&nbsp;                    status, updatedDate, orderCode, shopId);</b>
+&nbsp;
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            log.error(&quot;&gt;&gt;&gt; Lỗi khi phân tích GHN response: {}&quot;, e.getMessage());</b>
+<b class="nc">&nbsp;            result.put(&quot;status&quot;, &quot;error&quot;);</b>
+<b class="nc">&nbsp;            result.put(&quot;message&quot;, &quot;Lỗi khi xử lý dữ liệu GHN: &quot; + e.getMessage());</b>
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; getLastestOrderStatus(String orderCode) {
+<b class="nc">&nbsp;        String resultInString = getOrderDetail(orderCode);</b>
+<b class="nc">&nbsp;        return extractLatestOrderStatus(resultInString);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; createCancelOrderShippingServiceBodyRequest(String orderCode) {
+<b class="nc">&nbsp;        return Map.of(</b>
+<b class="nc">&nbsp;                &quot;order_codes&quot;, List.of(orderCode)</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; createCancelOrderShippingServiceResponseToDto(String orderCode, String shopId) throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; bodyRequest = createCancelOrderShippingServiceBodyRequest(orderCode);</b>
+<b class="nc">&nbsp;        String resultInString = cancelOrder(bodyRequest, shopId);</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectMapper objectMapper = new ObjectMapper();</b>
+<b class="nc">&nbsp;        JsonNode jsonData = objectMapper.readTree(resultInString);</b>
+&nbsp;
+<b class="nc">&nbsp;        result.put(&quot;code&quot;, jsonData.path(&quot;code&quot;).asInt(0));</b>
+<b class="nc">&nbsp;        result.put(&quot;message&quot;, jsonData.path(&quot;message&quot;).asText(&quot;&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;        JsonNode jsonNode = jsonData.path(&quot;data&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (jsonNode.isArray()) {</b>
+<b class="nc">&nbsp;            List&lt;Map&lt;String, Object&gt;&gt; dataList = new ArrayList&lt;&gt;();</b>
+&nbsp;
+<b class="nc">&nbsp;            for (JsonNode node : jsonNode) {</b>
+<b class="nc">&nbsp;                Map&lt;String, Object&gt; item = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;                item.put(&quot;order_code&quot;, node.path(&quot;order_code&quot;).asText(&quot;&quot;));</b>
+<b class="nc">&nbsp;                item.put(&quot;result&quot;, node.path(&quot;result&quot;).asBoolean(false));</b>
+<b class="nc">&nbsp;                item.put(&quot;message&quot;, node.path(&quot;message&quot;).asText(&quot;&quot;));</b>
+<b class="nc">&nbsp;                dataList.add(item);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            result.put(&quot;data&quot;, dataList);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            result.put(&quot;data&quot;, Collections.emptyList());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getShippingFee(Map&lt;String, Object&gt; requestBody, String shopId) {
+<b class="fc">&nbsp;        RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+<b class="fc">&nbsp;        HttpHeaders headers = new HttpHeaders();</b>
+<b class="fc">&nbsp;        headers.setContentType(MediaType.APPLICATION_JSON);</b>
+<b class="fc">&nbsp;        headers.set(&quot;Token&quot;, TOKEN);</b>
+<b class="fc">&nbsp;        headers.set(&quot;ShopId&quot;, shopId);</b>
+&nbsp;
+<b class="fc">&nbsp;        HttpEntity&lt;Map&lt;String, Object&gt;&gt; entity = new HttpEntity&lt;&gt;(requestBody, headers);</b>
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            ResponseEntity&lt;String&gt; response = restTemplate.postForEntity(</b>
+&nbsp;                    &quot;https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee&quot;, entity, String.class);
+<b class="fc">&nbsp;            return response.getBody();</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            return &quot;{\&quot;error\&quot;:\&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String registerShop(Map&lt;String, Object&gt; requestBody) {
+<b class="nc">&nbsp;        RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+<b class="nc">&nbsp;        HttpHeaders headers = new HttpHeaders();</b>
+<b class="nc">&nbsp;        headers.setContentType(MediaType.APPLICATION_JSON);</b>
+<b class="nc">&nbsp;        headers.set(&quot;Token&quot;, TOKEN);</b>
+&nbsp;
+<b class="nc">&nbsp;        HttpEntity&lt;Map&lt;String, Object&gt;&gt; entity = new HttpEntity&lt;&gt;(requestBody, headers);</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            ResponseEntity&lt;String&gt; response = restTemplate.postForEntity(</b>
+&nbsp;                    &quot;https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register&quot;, entity, String.class);
+<b class="nc">&nbsp;            return response.getBody();</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            return &quot;{\&quot;error\&quot;: \&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getProvinces() {
+<b class="nc">&nbsp;        RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+<b class="nc">&nbsp;        HttpHeaders headers = new HttpHeaders();</b>
+<b class="nc">&nbsp;        headers.setContentType(MediaType.APPLICATION_JSON);</b>
+<b class="nc">&nbsp;        headers.set(&quot;Token&quot;, &quot;4433d6f4-ae5f-11f0-b040-4e257d8388b4&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        HttpEntity&lt;String&gt; entity = new HttpEntity&lt;&gt;(headers);</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            ResponseEntity&lt;String&gt; response = restTemplate.exchange(</b>
+&nbsp;                    &quot;https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province&quot;,
+&nbsp;                    HttpMethod.GET,
+&nbsp;                    entity,
+&nbsp;                    String.class);
+&nbsp;
+<b class="nc">&nbsp;            return response.getBody();</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            return &quot;{\&quot;error\&quot;: \&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getWards(int districtId) {
+<b class="nc">&nbsp;        RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+<b class="nc">&nbsp;        HttpHeaders headers = new HttpHeaders();</b>
+<b class="nc">&nbsp;        headers.set(&quot;Token&quot;, &quot;4433d6f4-ae5f-11f0-b040-4e257d8388b4&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        HttpEntity&lt;Void&gt; entity = new HttpEntity&lt;&gt;(headers);</b>
+&nbsp;
+<b class="nc">&nbsp;        String url = &quot;https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=&quot; + districtId;</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            ResponseEntity&lt;String&gt; response = restTemplate.exchange(</b>
+&nbsp;                    url,
+&nbsp;                    HttpMethod.GET, // GET là chuẩn nhất ở đây
+&nbsp;                    entity,
+&nbsp;                    String.class);
+<b class="nc">&nbsp;            return response.getBody();</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            return &quot;{\&quot;error\&quot;: \&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDistricts(int provinceId) {
+<b class="nc">&nbsp;        RestTemplate restTemplate = new RestTemplate();</b>
+&nbsp;
+<b class="nc">&nbsp;        HttpHeaders headers = new HttpHeaders();</b>
+<b class="nc">&nbsp;        headers.setContentType(MediaType.APPLICATION_JSON);</b>
+<b class="nc">&nbsp;        headers.set(&quot;Token&quot;, &quot;4433d6f4-ae5f-11f0-b040-4e257d8388b4&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; requestBody = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        requestBody.put(&quot;province_id&quot;, provinceId);</b>
+&nbsp;
+<b class="nc">&nbsp;        HttpEntity&lt;Map&lt;String, Object&gt;&gt; entity = new HttpEntity&lt;&gt;(requestBody, headers);</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            ResponseEntity&lt;String&gt; response = restTemplate.exchange(</b>
+&nbsp;                    &quot;https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district&quot;,
+&nbsp;                    HttpMethod.POST, // Dù curl ghi GET, GHN yêu cầu POST khi có body
+&nbsp;                    entity,
+&nbsp;                    String.class);
+&nbsp;
+<b class="nc">&nbsp;            return response.getBody();</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            e.printStackTrace();</b>
+<b class="nc">&nbsp;            return &quot;{\&quot;error\&quot;: \&quot;&quot; + e.getMessage() + &quot;\&quot;}&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; getProvinceList() throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; result = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        String provincesInString = getProvinces();</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectMapper mapper = new ObjectMapper();</b>
+<b class="nc">&nbsp;        JsonNode root = mapper.readTree(provincesInString);</b>
+<b class="nc">&nbsp;        JsonNode data = root.path(&quot;data&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        for (JsonNode province : data) {</b>
+<b class="nc">&nbsp;            int id = province.path(&quot;ProvinceID&quot;).asInt();</b>
+<b class="nc">&nbsp;            String name = province.path(&quot;ProvinceName&quot;).asText();</b>
+<b class="nc">&nbsp;            result.put(id + &quot;&quot;, name);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; getDistrictListByProvinceId(int provinceId) throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; result = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        String districtsInString = getDistricts(provinceId);</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectMapper mapper = new ObjectMapper();</b>
+<b class="nc">&nbsp;        JsonNode root = mapper.readTree(districtsInString);</b>
+<b class="nc">&nbsp;        JsonNode data = root.path(&quot;data&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        for (JsonNode province : data) {</b>
+<b class="nc">&nbsp;            int id = province.path(&quot;DistrictID&quot;).asInt();</b>
+<b class="nc">&nbsp;            String name = province.path(&quot;DistrictName&quot;).asText();</b>
+<b class="nc">&nbsp;            result.put(id + &quot;&quot;, name);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; getWardListByDistrictId(int districtId) throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; result = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        String districtsInString = getWards(districtId);</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectMapper mapper = new ObjectMapper();</b>
+<b class="nc">&nbsp;        JsonNode root = mapper.readTree(districtsInString);</b>
+<b class="nc">&nbsp;        JsonNode data = root.path(&quot;data&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        for (JsonNode province : data) {</b>
+<b class="nc">&nbsp;            int id = province.path(&quot;WardCode&quot;).asInt();</b>
+<b class="nc">&nbsp;            String name = province.path(&quot;WardName&quot;).asText();</b>
+<b class="nc">&nbsp;            result.put(id + &quot;&quot;, name);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String findProvinceCodeByProvinceName(String provinceName) throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; provinceList = getProvinceList();</b>
+&nbsp;
+&nbsp;        // Duyệt qua danh sách để tìm tỉnh có tên khớp
+<b class="nc">&nbsp;        for (Map.Entry&lt;String, String&gt; entry : provinceList.entrySet()) {</b>
+<b class="nc">&nbsp;            if (entry.getValue().equalsIgnoreCase(provinceName.trim())) {</b>
+<b class="nc">&nbsp;                return entry.getKey();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String findDistrictCodeByDistrictName(int provinceId, String districtName) throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; districtList = getDistrictListByProvinceId(provinceId);</b>
+&nbsp;
+<b class="nc">&nbsp;        for (Map.Entry&lt;String, String&gt; entry : districtList.entrySet()) {</b>
+<b class="nc">&nbsp;            if (entry.getValue().equalsIgnoreCase(districtName.trim())) {</b>
+<b class="nc">&nbsp;                return entry.getKey();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String findWardCodeByWardName(int districtId, String wardName) throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; wardList = getWardListByDistrictId(districtId);</b>
+&nbsp;
+<b class="nc">&nbsp;        for (Map.Entry&lt;String, String&gt; entry : wardList.entrySet()) {</b>
+<b class="nc">&nbsp;            if (entry.getValue().equalsIgnoreCase(wardName.trim())) {</b>
+<b class="nc">&nbsp;                return entry.getKey(); // WardCode là String, không cần parse sang Long</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; getShippingFeeDto(Order order, int codValue) throws JsonProcessingException {
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; bodyData = getShippingFeeServiceBodyRequest(order, codValue);</b>
+&nbsp;
+<b class="fc">&nbsp;        String resultString = getShippingFee(bodyData, order.getPostProduct().getSeller().getGhnShopId());</b>
+&nbsp;
+<b class="fc">&nbsp;        ObjectMapper objectMapper = new ObjectMapper();</b>
+<b class="fc">&nbsp;        JsonNode root = objectMapper.readTree(resultString);</b>
+&nbsp;
+<b class="pc">&nbsp;        if (root == null || !root.has(&quot;code&quot;)) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Phản hồi không hợp lệ từ GHN: &quot; + resultString);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        int code = root.path(&quot;code&quot;).asInt();</b>
+<b class="fc">&nbsp;        if (code != 200) {</b>
+<b class="fc">&nbsp;            String message = root.path(&quot;message&quot;).asText(&quot;Unknown error&quot;);</b>
+<b class="fc">&nbsp;            throw new RuntimeException(&quot;GHN API trả về lỗi: &quot; + message);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        JsonNode data = root.path(&quot;data&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;String, String&gt; result = new LinkedHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        result.put(&quot;message&quot;, root.path(&quot;message&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;total&quot;, data.path(&quot;total&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;service_fee&quot;, data.path(&quot;service_fee&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;insurance_fee&quot;, data.path(&quot;insurance_fee&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;pick_station_fee&quot;, data.path(&quot;pick_station_fee&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;coupon_value&quot;, data.path(&quot;coupon_value&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;r2s_fee&quot;, data.path(&quot;r2s_fee&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;cod_fee&quot;, data.path(&quot;cod_fee&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;pick_remote_areas_fee&quot;, data.path(&quot;pick_remote_areas_fee&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;deliver_remote_areas_fee&quot;, data.path(&quot;deliver_remote_areas_fee&quot;).asText());</b>
+<b class="fc">&nbsp;        result.put(&quot;cod_failed_fee&quot;, data.path(&quot;cod_failed_fee&quot;).asText());</b>
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;GHN shipping fee response mapped: {}&quot;, result);</b>
+&nbsp;
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; getShippingFeeDto(Buyer buyer, Seller seller, PostProduct postProduct, int codValue)
+&nbsp;            throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; bodyData = getShippingFeeServiceBodyRequest(buyer, seller, postProduct, codValue);</b>
+&nbsp;
+<b class="nc">&nbsp;        String resultString = getShippingFee(bodyData, seller.getGhnShopId());</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; resultInString: {}&quot;, resultString);</b>
+&nbsp;
+<b class="nc">&nbsp;        ObjectMapper objectMapper = new ObjectMapper();</b>
+<b class="nc">&nbsp;        JsonNode root = objectMapper.readTree(resultString);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (root == null || !root.has(&quot;code&quot;)) {</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Phản hồi không hợp lệ từ GHN: &quot; + resultString);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int code = root.path(&quot;code&quot;).asInt();</b>
+<b class="nc">&nbsp;        if (code != 200) {</b>
+<b class="nc">&nbsp;            String message = root.path(&quot;message&quot;).asText(&quot;Unknown error&quot;);</b>
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;GHN API trả về lỗi: &quot; + message);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        JsonNode data = root.path(&quot;data&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, String&gt; result = new LinkedHashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        result.put(&quot;message&quot;, root.path(&quot;message&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;total&quot;, data.path(&quot;total&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;service_fee&quot;, data.path(&quot;service_fee&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;insurance_fee&quot;, data.path(&quot;insurance_fee&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;pick_station_fee&quot;, data.path(&quot;pick_station_fee&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;coupon_value&quot;, data.path(&quot;coupon_value&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;r2s_fee&quot;, data.path(&quot;r2s_fee&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;cod_fee&quot;, data.path(&quot;cod_fee&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;pick_remote_areas_fee&quot;, data.path(&quot;pick_remote_areas_fee&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;deliver_remote_areas_fee&quot;, data.path(&quot;deliver_remote_areas_fee&quot;).asText());</b>
+<b class="nc">&nbsp;        result.put(&quot;cod_failed_fee&quot;, data.path(&quot;cod_failed_fee&quot;).asText());</b>
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;GHN shipping fee response mapped: {}&quot;, result);</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; getShippingFeeServiceBodyRequest(Order order, int codValue)
+&nbsp;            throws JsonProcessingException {
+<b class="fc">&nbsp;        String sellerProvinceId = findProvinceCodeByProvinceName(</b>
+<b class="fc">&nbsp;                order.getPostProduct().getSeller().getBuyer().getProvinceName());</b>
+<b class="fc">&nbsp;        String sellerDistrictId = findDistrictCodeByDistrictName(Integer.parseInt(sellerProvinceId),</b>
+<b class="fc">&nbsp;                order.getPostProduct().getSeller().getBuyer().getDistrictName());</b>
+<b class="fc">&nbsp;        String sellerWardId = findWardCodeByWardName(Integer.parseInt(sellerDistrictId),</b>
+<b class="fc">&nbsp;                order.getPostProduct().getSeller().getBuyer().getWardName());</b>
+&nbsp;
+<b class="fc">&nbsp;        String buyerProvinceId = findProvinceCodeByProvinceName(order.getBuyer().getProvinceName());</b>
+<b class="fc">&nbsp;        String buyerDistrictId = findDistrictCodeByDistrictName(Integer.parseInt(buyerProvinceId),</b>
+<b class="fc">&nbsp;                order.getBuyer().getDistrictName());</b>
+<b class="fc">&nbsp;        String buyerWardId = findWardCodeByWardName(Integer.parseInt(buyerDistrictId), order.getBuyer().getWardName());</b>
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        result.put(&quot;service_type_id&quot;, 5);</b>
+<b class="fc">&nbsp;        result.put(&quot;from_district_id&quot;, Integer.parseInt(sellerDistrictId));</b>
+<b class="fc">&nbsp;        result.put(&quot;from_ward_code&quot;, sellerWardId);</b>
+<b class="fc">&nbsp;        result.put(&quot;to_district_id&quot;, Integer.parseInt(buyerDistrictId));</b>
+<b class="fc">&nbsp;        result.put(&quot;to_ward_code&quot;, buyerWardId);</b>
+<b class="fc">&nbsp;        result.put(&quot;length&quot;, order.getPostProduct().getLength());</b>
+<b class="fc">&nbsp;        result.put(&quot;width&quot;, order.getPostProduct().getWidth());</b>
+<b class="fc">&nbsp;        result.put(&quot;height&quot;, order.getPostProduct().getHeight());</b>
+<b class="fc">&nbsp;        result.put(&quot;weight&quot;, order.getPostProduct().getWeight());</b>
+<b class="fc">&nbsp;        result.put(&quot;cod_value&quot;, codValue);</b>
+<b class="fc">&nbsp;        result.put(&quot;insurance_value&quot;, 0);</b>
+<b class="fc">&nbsp;        result.put(&quot;coupon&quot;, null);</b>
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; item = Map.of(</b>
+<b class="fc">&nbsp;                &quot;name&quot;, order.getPostProduct().getTitle(),</b>
+<b class="fc">&nbsp;                &quot;quantity&quot;, 1,</b>
+<b class="fc">&nbsp;                &quot;length&quot;, order.getPostProduct().getLength(),</b>
+<b class="fc">&nbsp;                &quot;width&quot;, order.getPostProduct().getWidth(),</b>
+<b class="fc">&nbsp;                &quot;height&quot;, order.getPostProduct().getHeight(),</b>
+<b class="fc">&nbsp;                &quot;weight&quot;, order.getPostProduct().getWeight());</b>
+<b class="fc">&nbsp;        result.put(&quot;items&quot;, List.of(item));</b>
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; getShippingFeeServiceBodyRequest(Buyer buyer, Seller seller, PostProduct postProduct,
+&nbsp;                                                                int codValue) throws JsonProcessingException {
+<b class="nc">&nbsp;        String sellerProvinceId = findProvinceCodeByProvinceName(seller.getBuyer().getProvinceName());</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GhnServiceImpl] seller province id: {}&quot;, sellerProvinceId);</b>
+<b class="nc">&nbsp;        String sellerDistrictId = findDistrictCodeByDistrictName(Integer.parseInt(sellerProvinceId),</b>
+<b class="nc">&nbsp;                seller.getBuyer().getDistrictName());</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GhnServiceImpl] seller district id: {}&quot;, sellerProvinceId);</b>
+<b class="nc">&nbsp;        String sellerWardId = findWardCodeByWardName(Integer.parseInt(sellerDistrictId),</b>
+<b class="nc">&nbsp;                seller.getBuyer().getWardName());</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GhnServiceImpl] seller ward id: {}&quot;, sellerWardId);</b>
+&nbsp;
+<b class="nc">&nbsp;        String buyerProvinceId = findProvinceCodeByProvinceName(buyer.getProvinceName());</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GhnServiceImpl] buyer province id: {}&quot;, sellerProvinceId);</b>
+<b class="nc">&nbsp;        String buyerDistrictId = findDistrictCodeByDistrictName(Integer.parseInt(buyerProvinceId),</b>
+<b class="nc">&nbsp;                buyer.getDistrictName());</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GhnServiceImpl] buyer district id: {}&quot;, buyerDistrictId);</b>
+<b class="nc">&nbsp;        String buyerWardId = findWardCodeByWardName(Integer.parseInt(buyerDistrictId), buyer.getWardName());</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GhnServiceImpl] buyer ward id: {}&quot;, buyerWardId);</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        result.put(&quot;service_type_id&quot;, 5);</b>
+<b class="nc">&nbsp;        result.put(&quot;from_district_id&quot;, Integer.parseInt(sellerDistrictId));</b>
+<b class="nc">&nbsp;        result.put(&quot;from_ward_code&quot;, sellerWardId);</b>
+<b class="nc">&nbsp;        result.put(&quot;to_district_id&quot;, Integer.parseInt(buyerDistrictId));</b>
+<b class="nc">&nbsp;        result.put(&quot;to_ward_code&quot;, buyerWardId);</b>
+<b class="nc">&nbsp;        result.put(&quot;length&quot;, Integer.parseInt(postProduct.getLength()));</b>
+<b class="nc">&nbsp;        result.put(&quot;width&quot;, Integer.parseInt(postProduct.getWidth()));</b>
+<b class="nc">&nbsp;        result.put(&quot;height&quot;, Integer.parseInt(postProduct.getHeight()));</b>
+<b class="nc">&nbsp;        result.put(&quot;weight&quot;, Integer.parseInt(postProduct.getWeight()));</b>
+<b class="nc">&nbsp;        result.put(&quot;cod_value&quot;, codValue);</b>
+<b class="nc">&nbsp;        result.put(&quot;insurance_value&quot;, 0);</b>
+<b class="nc">&nbsp;        result.put(&quot;coupon&quot;, null);</b>
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; item = Map.of(</b>
+<b class="nc">&nbsp;                &quot;name&quot;, postProduct.getTitle(),</b>
+<b class="nc">&nbsp;                &quot;quantity&quot;, 1,</b>
+<b class="nc">&nbsp;                &quot;length&quot;, Integer.parseInt(postProduct.getLength()),</b>
+<b class="nc">&nbsp;                &quot;width&quot;, Integer.parseInt(postProduct.getWidth()),</b>
+<b class="nc">&nbsp;                &quot;height&quot;, Integer.parseInt(postProduct.getHeight()),</b>
+<b class="nc">&nbsp;                &quot;weight&quot;, Integer.parseInt(postProduct.getWeight()));</b>
+<b class="nc">&nbsp;        result.put(&quot;items&quot;, List.of(item));</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; createOrderShippingServiceBodyRequest(Order order, Payment paymentMethod)
+&nbsp;            throws JsonProcessingException {
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        Seller seller = order.getPostProduct().getSeller();</b>
+<b class="fc">&nbsp;        Buyer buyer = order.getBuyer();</b>
+<b class="fc">&nbsp;        PostProduct postProduct = order.getPostProduct();</b>
+<b class="fc">&nbsp;        String sellerProvinceId = findProvinceCodeByProvinceName(seller.getBuyer().getProvinceName());</b>
+<b class="fc">&nbsp;        String sellerDistrictId = findDistrictCodeByDistrictName(Integer.parseInt(sellerProvinceId),</b>
+<b class="fc">&nbsp;                seller.getBuyer().getDistrictName());</b>
+<b class="fc">&nbsp;        String sellerWardId = findWardCodeByWardName(Integer.parseInt(sellerDistrictId),</b>
+<b class="fc">&nbsp;                seller.getBuyer().getWardName());</b>
+<b class="fc">&nbsp;        String buyerProvinceId = findProvinceCodeByProvinceName(buyer.getProvinceName());</b>
+<b class="fc">&nbsp;        String buyerDistrictId = findDistrictCodeByDistrictName(Integer.parseInt(buyerProvinceId),</b>
+<b class="fc">&nbsp;                buyer.getDistrictName());</b>
+<b class="fc">&nbsp;        String buyerWardId = findWardCodeByWardName(Integer.parseInt(buyerDistrictId), buyer.getWardName());</b>
+<b class="fc">&nbsp;        int codValue = 0;</b>
+<b class="pc">&nbsp;        if (&quot;COD&quot;.equalsIgnoreCase(paymentMethod.getGatewayName())) {</b>
+<b class="fc">&nbsp;            codValue = order.getPrice().intValue();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        data.put(&quot;payment_type_id&quot;, 2);</b>
+<b class="fc">&nbsp;        data.put(&quot;note&quot;, &quot;Not have&quot;); // lưu ý vì chưa có tham số truyền vào</b>
+<b class="fc">&nbsp;        data.put(&quot;required_note&quot;, &quot;KHONGCHOXEMHANG&quot;);</b>
+<b class="fc">&nbsp;        data.put(&quot;return_phone&quot;, seller.getBuyer().getPhoneNumber());</b>
+<b class="fc">&nbsp;        data.put(&quot;return_address&quot;, seller.getBuyer().getStreet());</b>
+<b class="fc">&nbsp;        data.put(&quot;return_district_id&quot;, Integer.parseInt(sellerDistrictId));</b>
+<b class="fc">&nbsp;        data.put(&quot;return_ward_code&quot;, sellerWardId);</b>
+<b class="fc">&nbsp;        data.put(&quot;client_order_code&quot;, &quot;&quot;);</b>
+<b class="fc">&nbsp;        data.put(&quot;from_name&quot;, seller.getBuyer().getFullName());</b>
+<b class="fc">&nbsp;        data.put(&quot;from_phone&quot;, seller.getBuyer().getPhoneNumber());</b>
+<b class="fc">&nbsp;        data.put(&quot;from_address&quot;, stringUtils.fullAddress(seller.getBuyer().getStreet(), seller.getBuyer().getWardName(), seller.getBuyer().getDistrictName(), seller.getBuyer().getProvinceName()));</b>
+<b class="fc">&nbsp;        data.put(&quot;from_ward_name&quot;, seller.getBuyer().getWardName());</b>
+<b class="fc">&nbsp;        data.put(&quot;from_district_name&quot;, seller.getBuyer().getDistrictName());</b>
+<b class="fc">&nbsp;        data.put(&quot;from_province_name&quot;, seller.getBuyer().getProvinceName());</b>
+<b class="fc">&nbsp;        data.put(&quot;to_name&quot;, buyer.getFullName());</b>
+<b class="fc">&nbsp;        data.put(&quot;to_phone&quot;, buyer.getPhoneNumber());</b>
+<b class="fc">&nbsp;        data.put(&quot;to_address&quot;, buyer.getStreet());</b>
+<b class="fc">&nbsp;        data.put(&quot;to_ward_name&quot;, buyer.getWardName());</b>
+<b class="fc">&nbsp;        data.put(&quot;to_district_name&quot;, buyer.getDistrictName());</b>
+<b class="fc">&nbsp;        data.put(&quot;to_province_name&quot;, buyer.getProvinceName());</b>
+<b class="fc">&nbsp;        data.put(&quot;cod_amount&quot;, codValue);</b>
+<b class="fc">&nbsp;        data.put(&quot;content&quot;, order.getPostProduct().getTitle());</b>
+<b class="fc">&nbsp;        data.put(&quot;length&quot;, Integer.parseInt(postProduct.getLength()));</b>
+<b class="fc">&nbsp;        data.put(&quot;width&quot;, Integer.parseInt(postProduct.getWidth()));</b>
+<b class="fc">&nbsp;        data.put(&quot;height&quot;, Integer.parseInt(postProduct.getHeight()));</b>
+<b class="fc">&nbsp;        data.put(&quot;weight&quot;, Integer.parseInt(postProduct.getWeight()));</b>
+<b class="fc">&nbsp;        data.put(&quot;cod_failed_amount&quot;, 2000);</b>
+<b class="fc">&nbsp;        data.put(&quot;pick_station_id&quot;, 1444);</b>
+<b class="fc">&nbsp;        data.put(&quot;deliver_station_id&quot;, null);</b>
+<b class="fc">&nbsp;        data.put(&quot;insurance_value&quot;, 0);</b>
+<b class="fc">&nbsp;        data.put(&quot;service_type_id&quot;, 5);</b>
+<b class="fc">&nbsp;        data.put(&quot;coupon&quot;, null);</b>
+<b class="fc">&nbsp;        data.put(&quot;pickup_time&quot;, 1692840132);</b>
+<b class="fc">&nbsp;        data.put(&quot;pick_shift&quot;, List.of(2));</b>
+&nbsp;
+&nbsp;        // Items
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; item = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        item.put(&quot;name&quot;, order.getPostProduct().getTitle());</b>
+<b class="fc">&nbsp;        item.put(&quot;code&quot;, &quot;&quot;);</b>
+<b class="fc">&nbsp;        item.put(&quot;quantity&quot;, 1);</b>
+<b class="fc">&nbsp;        item.put(&quot;price&quot;, postProduct.getPrice().intValue());</b>
+<b class="fc">&nbsp;        item.put(&quot;length&quot;, Integer.parseInt(postProduct.getLength()));</b>
+<b class="fc">&nbsp;        item.put(&quot;width&quot;, Integer.parseInt(postProduct.getWidth()));</b>
+<b class="fc">&nbsp;        item.put(&quot;height&quot;, Integer.parseInt(postProduct.getHeight()));</b>
+<b class="fc">&nbsp;        item.put(&quot;weight&quot;, Integer.parseInt(postProduct.getWeight()));</b>
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; category = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        category.put(&quot;level1&quot;, order.getPostProduct().getTitle());</b>
+<b class="fc">&nbsp;        item.put(&quot;category&quot;, category);</b>
+&nbsp;
+<b class="fc">&nbsp;        data.put(&quot;items&quot;, List.of(item));</b>
+&nbsp;
+<b class="fc">&nbsp;        return data;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; createOrderShippingResponseToDto(Order order, Payment paymentMethod)
+&nbsp;            throws JsonProcessingException {
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; bodyData = createOrderShippingServiceBodyRequest(order, paymentMethod);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GHN Service] GHN body data: {}&quot;, bodyData);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GHN Service] GHN shop id: {}&quot;, order.getPostProduct().getSeller().getGhnShopId());</b>
+&nbsp;
+<b class="fc">&nbsp;        String resultInString = createOrder(bodyData, order.getPostProduct().getSeller().getGhnShopId());</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [GHN Service] Result in String: {}&quot;, resultInString);</b>
+&nbsp;
+<b class="fc">&nbsp;        ObjectMapper mapper = new ObjectMapper();</b>
+<b class="fc">&nbsp;        JsonNode root = mapper.readTree(resultInString);</b>
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;String, String&gt; response = new HashMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        int code = root.path(&quot;code&quot;).asInt();</b>
+<b class="fc">&nbsp;        String message = root.path(&quot;message&quot;).asText();</b>
+<b class="fc">&nbsp;        String messageDisplay = root.path(&quot;message_display&quot;).asText();</b>
+&nbsp;
+<b class="pc">&nbsp;        if (code == 200) {</b>
+<b class="fc">&nbsp;            JsonNode data = root.path(&quot;data&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            String orderCode = data.path(&quot;order_code&quot;).asText(&quot;&quot;);</b>
+<b class="fc">&nbsp;            String sortCode = data.path(&quot;sort_code&quot;).asText(&quot;&quot;);</b>
+<b class="fc">&nbsp;            String transType = data.path(&quot;trans_type&quot;).asText(&quot;&quot;);</b>
+<b class="fc">&nbsp;            String expectedDeliveryTime = data.path(&quot;expected_delivery_time&quot;).asText(&quot;&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            JsonNode fee = data.path(&quot;fee&quot;);</b>
+<b class="fc">&nbsp;            String mainService = fee.path(&quot;main_service&quot;).asText(&quot;0&quot;);</b>
+<b class="fc">&nbsp;            String insurance = fee.path(&quot;insurance&quot;).asText(&quot;0&quot;);</b>
+<b class="fc">&nbsp;            String totalFee = data.path(&quot;total_fee&quot;).asText(&quot;0&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            response.put(&quot;success&quot;, &quot;true&quot;);</b>
+<b class="fc">&nbsp;            response.put(&quot;orderCode&quot;, orderCode);</b>
+<b class="fc">&nbsp;            response.put(&quot;sortCode&quot;, sortCode);</b>
+<b class="fc">&nbsp;            response.put(&quot;transType&quot;, transType);</b>
+<b class="fc">&nbsp;            response.put(&quot;expectedDeliveryTime&quot;, expectedDeliveryTime);</b>
+<b class="fc">&nbsp;            response.put(&quot;mainServiceFee&quot;, mainService);</b>
+<b class="fc">&nbsp;            response.put(&quot;insuranceFee&quot;, insurance);</b>
+<b class="fc">&nbsp;            response.put(&quot;totalFee&quot;, totalFee);</b>
+<b class="fc">&nbsp;            response.put(&quot;messageDisplay&quot;, messageDisplay);</b>
+&nbsp;
+&nbsp;        } else {
+<b class="nc">&nbsp;            response.put(&quot;success&quot;, &quot;false&quot;);</b>
+<b class="nc">&nbsp;            response.put(&quot;message&quot;, message);</b>
+<b class="nc">&nbsp;            response.put(&quot;messageDisplay&quot;, messageDisplay);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; TEst: {}&quot;, response);</b>
+&nbsp;
+<b class="fc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getLastestOrderStatusOnlyStatus(String orderCode) {
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; result = getLastestOrderStatus(orderCode);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (result == null || result.isEmpty()) {</b>
+<b class="nc">&nbsp;            return &quot;unknown&quot;;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Object statusObj = result.get(&quot;status&quot;);</b>
+<b class="nc">&nbsp;        String status = statusObj != null ? statusObj.toString() : &quot;unknown&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;        return status;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

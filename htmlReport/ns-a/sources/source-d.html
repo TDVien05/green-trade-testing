@@ -1,0 +1,441 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > KycService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: KycService (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">KycService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.8%
+  </span>
+  <span class="absValue">
+    (10/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.1%
+  </span>
+  <span class="absValue">
+    (43/148)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.exception.ProfileException;
+&nbsp;import Green_trade.green_trade_platform.mapper.SellerMapper;
+&nbsp;import Green_trade.green_trade_platform.model.Buyer;
+&nbsp;import Green_trade.green_trade_platform.model.Seller;
+&nbsp;import Green_trade.green_trade_platform.repository.BuyerRepository;
+&nbsp;import Green_trade.green_trade_platform.repository.SellerRepository;
+&nbsp;import Green_trade.green_trade_platform.request.UpgradeAccountRequest;
+&nbsp;import Green_trade.green_trade_platform.response.KycResponse;
+&nbsp;import Green_trade.green_trade_platform.util.FileUtils;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.security.core.userdetails.UsernameNotFoundException;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.web.multipart.MultipartFile;
+&nbsp;
+&nbsp;import java.io.*;
+&nbsp;import java.net.HttpURLConnection;
+&nbsp;import java.net.URL;
+&nbsp;import java.nio.charset.StandardCharsets;
+&nbsp;import java.nio.file.Files;
+&nbsp;import java.text.Normalizer;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@RequiredArgsConstructor
+&nbsp;public class KycService {
+&nbsp;
+&nbsp;    private final BuyerRepository buyerRepository;
+&nbsp;    private final CloudinaryService cloudinaryService;
+&nbsp;    private final SellerRepository sellerRepository;
+&nbsp;    private final SellerMapper sellerMapper;
+&nbsp;    private final FileUtils fileUtils;
+&nbsp;    private final BuyerServiceImpl buyerService;
+&nbsp;
+&nbsp;
+&nbsp;    @Value(&quot;${api-key}&quot;)
+&nbsp;    private String fptApiKey;
+&nbsp;    @Value((&quot;${api-key-face}&quot;))
+&nbsp;    private String faceApiKey;
+&nbsp;    @Value((&quot;${api-key-secret}&quot;))
+&nbsp;    private String faceApiSecret;
+&nbsp;
+&nbsp;
+&nbsp;    public KycResponse verify(
+&nbsp;            MultipartFile identityFrontImageUrl,
+&nbsp;            MultipartFile businessLicenseUrl,
+&nbsp;            MultipartFile selfieImageUrl,
+&nbsp;            MultipartFile identityBackImageUrl,
+&nbsp;            MultipartFile storePolicyUrl,
+&nbsp;            UpgradeAccountRequest request
+&nbsp;    ) throws IOException {
+<b class="fc">&nbsp;        Buyer buyer = buyerService.getCurrentUser();</b>
+&nbsp;
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [KYC service] username: {}&quot;, buyer.getUsername());</b>
+&nbsp;
+&nbsp;        // Check buyer profile
+<b class="fc">&nbsp;        if (buyer.getFullName() == null) {</b>
+<b class="fc">&nbsp;            throw new ProfileException(&quot;Hoàn tất hồ sơ người dùng trước khi nâng cáp tài khoản&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Upload file into Cloudinary
+<b class="fc">&nbsp;        Map&lt;String, String&gt; uploadResult = cloudinaryService.upload(</b>
+<b class="fc">&nbsp;                identityFrontImageUrl, &quot;sellers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/identity_front_image&quot;</b>
+&nbsp;        );
+<b class="fc">&nbsp;        String frontImageUrl = uploadResult.get(&quot;fileUrl&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        uploadResult = cloudinaryService.upload(</b>
+<b class="fc">&nbsp;                businessLicenseUrl, &quot;sellers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/business_license_image&quot;</b>
+&nbsp;        );
+<b class="fc">&nbsp;        String license = uploadResult.get(&quot;fileUrl&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        uploadResult = cloudinaryService.upload(</b>
+<b class="fc">&nbsp;                identityBackImageUrl, &quot;sellers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/identity_back_image&quot;</b>
+&nbsp;        );
+<b class="fc">&nbsp;        String backImageUrl = uploadResult.get(&quot;fileUrl&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        uploadResult = cloudinaryService.upload(</b>
+<b class="fc">&nbsp;                selfieImageUrl, &quot;sellers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/selfie_image&quot;</b>
+&nbsp;        );
+<b class="fc">&nbsp;        String selfieUrl = uploadResult.get(&quot;fileUrl&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        uploadResult = cloudinaryService.upload(</b>
+<b class="fc">&nbsp;                storePolicyUrl, &quot;sellers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/policy_image&quot;</b>
+&nbsp;        );
+<b class="fc">&nbsp;        String policyUrl = uploadResult.get(&quot;fileUrl&quot;);</b>
+&nbsp;
+&nbsp;        // Check face
+<b class="fc">&nbsp;        boolean isMatchFace = callFaceCompareApi(frontImageUrl, selfieUrl);</b>
+<b class="fc">&nbsp;        if (!isMatchFace) {</b>
+<b class="fc">&nbsp;            return new KycResponse(false, &quot;Face not matched&quot;, &quot;REJECTED&quot;, &quot;Face verification failed&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Seller seller = sellerMapper.toEntity(request, buyer, frontImageUrl, license, backImageUrl, selfieUrl, policyUrl);</b>
+<b class="fc">&nbsp;        sellerRepository.save(seller);</b>
+&nbsp;
+<b class="fc">&nbsp;        return new KycResponse(true, &quot;KYC verified successfully&quot;, &quot;VERIFIED&quot;, null);</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Map&lt;String, String&gt; callOcrApi(String imageUrl) throws IOException {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Calling OCR API...&quot;);</b>
+<b class="nc">&nbsp;        URL imageDownloadUrl = new URL(imageUrl);</b>
+<b class="nc">&nbsp;        File tempFile = File.createTempFile(&quot;ocr&quot;, &quot;.jpg&quot;);</b>
+<b class="nc">&nbsp;        try (InputStream in = imageDownloadUrl.openStream();</b>
+<b class="nc">&nbsp;             OutputStream out = new FileOutputStream(tempFile)) {</b>
+<b class="nc">&nbsp;            in.transferTo(out);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String boundary = &quot;----WebKitFormBoundary&quot; + System.currentTimeMillis();</b>
+<b class="nc">&nbsp;        URL url = new URL(&quot;https://api.fpt.ai/vision/idr/vnm&quot;);</b>
+<b class="nc">&nbsp;        HttpURLConnection conn = (HttpURLConnection) url.openConnection();</b>
+<b class="nc">&nbsp;        conn.setRequestMethod(&quot;POST&quot;);</b>
+<b class="nc">&nbsp;        conn.setRequestProperty(&quot;api_key&quot;, fptApiKey);</b>
+<b class="nc">&nbsp;        conn.setRequestProperty(&quot;Content-Type&quot;, &quot;multipart/form-data; boundary=&quot; + boundary);</b>
+<b class="nc">&nbsp;        conn.setDoOutput(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        try (OutputStream os = conn.getOutputStream()) {</b>
+<b class="nc">&nbsp;            os.write((&quot;--&quot; + boundary + &quot;\r\n&quot;).getBytes());</b>
+<b class="nc">&nbsp;            os.write((&quot;Content-Disposition: form-data; name=\&quot;image\&quot;; filename=\&quot;&quot; + tempFile.getName() + &quot;\&quot;\r\n&quot;).getBytes());</b>
+<b class="nc">&nbsp;            os.write((&quot;Content-Type: image/jpeg\r\n\r\n&quot;).getBytes());</b>
+<b class="nc">&nbsp;            Files.copy(tempFile.toPath(), os);</b>
+<b class="nc">&nbsp;            os.write((&quot;\r\n--&quot; + boundary + &quot;--\r\n&quot;).getBytes());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        InputStream responseStream = conn.getResponseCode() == 200</b>
+<b class="nc">&nbsp;                ? conn.getInputStream()</b>
+<b class="nc">&nbsp;                : conn.getErrorStream();</b>
+&nbsp;
+<b class="nc">&nbsp;        String response = new String(responseStream.readAllBytes(), StandardCharsets.UTF_8);</b>
+<b class="nc">&nbsp;        log.info(&quot;FPT OCR Response: {}&quot;, response);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (!response.trim().startsWith(&quot;{&quot;)) {</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;Invalid response: &quot; + response);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ObjectMapper mapper = new ObjectMapper();</b>
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; result = mapper.readValue(response, Map.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;Map&lt;String, Object&gt;&gt; dataList = (List&lt;Map&lt;String, Object&gt;&gt;) result.get(&quot;data&quot;);</b>
+<b class="nc">&nbsp;        if (dataList == null || dataList.isEmpty()) {</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;FPT OCR returned empty data: &quot; + response);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; data = dataList.get(0);</b>
+<b class="nc">&nbsp;        String name = (String) data.get(&quot;name&quot;);</b>
+<b class="nc">&nbsp;        String idNumber = (String) data.get(&quot;id&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        return Map.of(&quot;name&quot;, name, &quot;id_number&quot;, idNumber);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; callOcrApi(MultipartFile file) throws IOException {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [KYC service] Calling FPT AI OCR API with multipart file...&quot;);</b>
+&nbsp;
+&nbsp;        // Create a temporary file from the uploaded multipart file
+<b class="nc">&nbsp;        File tempFile = File.createTempFile(&quot;ocr_&quot;, &quot;_&quot; + file.getOriginalFilename());</b>
+<b class="nc">&nbsp;        file.transferTo(tempFile);</b>
+&nbsp;
+<b class="nc">&nbsp;        String boundary = &quot;----WebKitFormBoundary&quot; + System.currentTimeMillis();</b>
+<b class="nc">&nbsp;        URL url = new URL(&quot;https://api.fpt.ai/vision/idr/vnm&quot;);</b>
+<b class="nc">&nbsp;        HttpURLConnection conn = (HttpURLConnection) url.openConnection();</b>
+<b class="nc">&nbsp;        conn.setRequestMethod(&quot;POST&quot;);</b>
+<b class="nc">&nbsp;        conn.setRequestProperty(&quot;api_key&quot;, fptApiKey);</b>
+<b class="nc">&nbsp;        conn.setRequestProperty(&quot;Content-Type&quot;, &quot;multipart/form-data; boundary=&quot; + boundary);</b>
+<b class="nc">&nbsp;        conn.setDoOutput(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        try (OutputStream os = conn.getOutputStream()) {</b>
+<b class="nc">&nbsp;            os.write((&quot;--&quot; + boundary + &quot;\r\n&quot;).getBytes());</b>
+<b class="nc">&nbsp;            os.write((&quot;Content-Disposition: form-data; name=\&quot;image\&quot;; filename=\&quot;&quot;</b>
+<b class="nc">&nbsp;                    + tempFile.getName() + &quot;\&quot;\r\n&quot;).getBytes());</b>
+<b class="nc">&nbsp;            os.write((&quot;Content-Type: &quot; + file.getContentType() + &quot;\r\n\r\n&quot;).getBytes());</b>
+<b class="nc">&nbsp;            Files.copy(tempFile.toPath(), os);</b>
+<b class="nc">&nbsp;            os.write((&quot;\r\n--&quot; + boundary + &quot;--\r\n&quot;).getBytes());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Read the API response
+<b class="nc">&nbsp;        InputStream responseStream = conn.getResponseCode() == 200</b>
+<b class="nc">&nbsp;                ? conn.getInputStream()</b>
+<b class="nc">&nbsp;                : conn.getErrorStream();</b>
+&nbsp;
+<b class="nc">&nbsp;        String response = new String(responseStream.readAllBytes(), StandardCharsets.UTF_8);</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [KYC service] FPT OCR Response: {}&quot;, response);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (!response.trim().startsWith(&quot;{&quot;)) {</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;Invalid response from OCR: &quot; + response);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ObjectMapper mapper = new ObjectMapper();</b>
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; result = mapper.readValue(response, Map.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;Map&lt;String, Object&gt;&gt; dataList = (List&lt;Map&lt;String, Object&gt;&gt;) result.get(&quot;data&quot;);</b>
+<b class="nc">&nbsp;        if (dataList == null || dataList.isEmpty()) {</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;FPT OCR returned empty data: &quot; + response);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; data = dataList.getFirst();</b>
+&nbsp;
+&nbsp;        // Extract key fields safely
+<b class="nc">&nbsp;        String idNumber = safeGet(data, &quot;id&quot;);</b>
+<b class="nc">&nbsp;        String name = safeGet(data, &quot;name&quot;);</b>
+<b class="nc">&nbsp;        String nationality = safeGet(data, &quot;nationality&quot;);</b>
+<b class="nc">&nbsp;        String home = safeGet(data, &quot;home&quot;); // sometimes called &quot;place_of_origin&quot; or &quot;address&quot; depending on OCR version</b>
+&nbsp;
+&nbsp;        // Delete temp file
+<b class="nc">&nbsp;        tempFile.delete();</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, String&gt; extracted = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        extracted.put(&quot;id&quot;, idNumber);</b>
+<b class="nc">&nbsp;        extracted.put(&quot;name&quot;, name);</b>
+<b class="nc">&nbsp;        extracted.put(&quot;nationality&quot;, nationality);</b>
+<b class="nc">&nbsp;        extracted.put(&quot;home&quot;, home);</b>
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [KYC service] Extracted data: {}&quot;, extracted);</b>
+<b class="nc">&nbsp;        return extracted;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String safeGet(Map&lt;String, Object&gt; data, String key) {
+<b class="nc">&nbsp;        Object value = data.get(key);</b>
+<b class="nc">&nbsp;        return value != null ? value.toString().trim() : &quot;&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public KycResponse update(
+&nbsp;            String storeName,
+&nbsp;            MultipartFile businessLicense,
+&nbsp;            MultipartFile storePolicy
+&nbsp;    ) throws IOException {
+<b class="fc">&nbsp;        Buyer buyer = buyerService.getCurrentUser();</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [UPDATE KYC] Buyer ID: {}, username: {}&quot;, buyer.getBuyerId(), buyer.getUsername());</b>
+&nbsp;
+&nbsp;        // Lấy seller đã tồn tại (đã KYC trước đó)
+<b class="fc">&nbsp;        Seller seller = sellerRepository.findByBuyer(buyer)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;Không tìm thấy hồ sơ KYC để cập nhật.&quot;));</b>
+&nbsp;
+<b class="pc">&nbsp;        if (businessLicense != null &amp;&amp; !businessLicense.isEmpty()) {</b>
+<b class="fc">&nbsp;            Map&lt;String, String&gt; upload = cloudinaryService.upload(</b>
+&nbsp;                    businessLicense,
+<b class="fc">&nbsp;                    &quot;sellers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/business_license_image&quot;</b>
+&nbsp;            );
+<b class="fc">&nbsp;            seller.setBusinessLicenseUrl(upload.get(&quot;fileUrl&quot;));</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (storePolicy != null &amp;&amp; !storePolicy.isEmpty()) {</b>
+<b class="fc">&nbsp;            Map&lt;String, String&gt; upload = cloudinaryService.upload(</b>
+&nbsp;                    storePolicy,
+<b class="fc">&nbsp;                    &quot;sellers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/store_policy_image&quot;</b>
+&nbsp;            );
+<b class="fc">&nbsp;            seller.setStorePolicyUrl(upload.get(&quot;fileUrl&quot;));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Cập nhật tên cửa hàng nếu có
+<b class="pc">&nbsp;        if (storeName != null &amp;&amp; !storeName.isBlank()) {</b>
+<b class="fc">&nbsp;            seller.setStoreName(storeName);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Lưu lại vào DB
+<b class="fc">&nbsp;        sellerRepository.save(seller);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [UPDATE KYC] Seller profile updated successfully for buyerId {}&quot;, buyer.getBuyerId());</b>
+&nbsp;
+<b class="fc">&nbsp;        return new KycResponse(true, &quot;Cập nhật KYC thành công&quot;, &quot;UPDATED&quot;, null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public boolean callFaceCompareApi(String idImageUrl, String selfieUrl) throws IOException {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Calling Face API...&quot;);</b>
+<b class="nc">&nbsp;        URL url = new URL(&quot;https://api-us.faceplusplus.com/facepp/v3/compare&quot;);</b>
+<b class="nc">&nbsp;        HttpURLConnection conn = (HttpURLConnection) url.openConnection();</b>
+<b class="nc">&nbsp;        conn.setRequestMethod(&quot;POST&quot;);</b>
+<b class="nc">&nbsp;        conn.setDoOutput(true);</b>
+&nbsp;
+<b class="nc">&nbsp;        String data = &quot;api_key=&quot; + faceApiKey +</b>
+&nbsp;                &quot;&amp;api_secret=&quot; + faceApiSecret +
+&nbsp;                &quot;&amp;image_url1=&quot; + idImageUrl +
+&nbsp;                &quot;&amp;image_url2=&quot; + selfieUrl;
+&nbsp;
+&nbsp;        // Gửi dữ liệu POST
+<b class="nc">&nbsp;        try (OutputStream os = conn.getOutputStream()) {</b>
+<b class="nc">&nbsp;            os.write(data.getBytes(StandardCharsets.UTF_8));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Đọc response
+<b class="nc">&nbsp;        StringBuilder response = new StringBuilder();</b>
+<b class="nc">&nbsp;        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {</b>
+&nbsp;            String line;
+<b class="nc">&nbsp;            while ((line = br.readLine()) != null) {</b>
+<b class="nc">&nbsp;                response.append(line);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        // Parse JSON bằng Jackson
+<b class="nc">&nbsp;        ObjectMapper mapper = new ObjectMapper();</b>
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; result = mapper.readValue(response.toString(), Map.class);</b>
+&nbsp;
+&nbsp;        // Lấy confidence
+<b class="nc">&nbsp;        double confidence = ((Number) result.get(&quot;confidence&quot;)).doubleValue();</b>
+<b class="nc">&nbsp;        return confidence &gt; 80; // Ngưỡng match 80%</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean equalsIgnoreAccentAndCase(String s1, String s2) {
+<b class="nc">&nbsp;        if (s1 == null || s2 == null) return false;</b>
+&nbsp;
+&nbsp;        // Change both of string to the same form
+<b class="nc">&nbsp;        s1 = Normalizer.normalize(s1, Normalizer.Form.NFD);</b>
+<b class="nc">&nbsp;        s2 = Normalizer.normalize(s2, Normalizer.Form.NFD);</b>
+&nbsp;
+<b class="nc">&nbsp;        s1 = s1.replaceAll(&quot;\\p{M}&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;        s2 = s2.replaceAll(&quot;\\p{M}&quot;, &quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        s1 = s1.toLowerCase();</b>
+<b class="nc">&nbsp;        s2 = s2.toLowerCase();</b>
+&nbsp;
+<b class="nc">&nbsp;        s1 = s1.replaceAll(&quot;\\s+&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;        s2 = s2.replaceAll(&quot;\\s+&quot;, &quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        return s1.equals(s2);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

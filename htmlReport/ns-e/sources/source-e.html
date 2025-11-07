@@ -1,0 +1,112 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UpdateBuyerProfileRequest</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.request</a>
+</div>
+
+<h1>Coverage Summary for Class: UpdateBuyerProfileRequest (Green_trade.green_trade_platform.request)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">UpdateBuyerProfileRequest</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.request;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.Gender;
+&nbsp;import jakarta.validation.constraints.NotBlank;
+&nbsp;import jakarta.validation.constraints.Pattern;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.Builder;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.NoArgsConstructor;
+&nbsp;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;
+&nbsp;@Data
+&nbsp;@Builder
+&nbsp;@NoArgsConstructor
+&nbsp;@AllArgsConstructor
+&nbsp;public class UpdateBuyerProfileRequest {
+&nbsp;    @NotBlank(message = &quot;Full name is required.&quot;)
+&nbsp;    @Pattern(regexp = &quot;^[\\p{L}\\s]+$&quot;, message = &quot;Full name can only include letters and spaces.&quot;)
+&nbsp;    private String fullName;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Email is required.&quot;)
+&nbsp;    @Pattern(regexp = &quot;^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$&quot;, message = &quot;Invalid email format.&quot;)
+&nbsp;    private String email;
+&nbsp;
+&nbsp;    private Gender gender;
+&nbsp;
+&nbsp;    private LocalDate dob;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Phone number is required.&quot;)
+&nbsp;    @Pattern(regexp = &quot;^0\\d{9}$&quot;, message = &quot;Phone number must start with 0 and contain 10 digits.&quot;)
+&nbsp;    private String phoneNumber;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Shipping address is required.&quot;)
+&nbsp;    @Pattern(regexp = &quot;^[\\p{L}0-9\\s,./-]+$&quot;, message = &quot;Shipping address contains invalid characters.&quot;)
+&nbsp;    private String street;
+&nbsp;
+&nbsp;    private String wardName;
+&nbsp;
+&nbsp;    private String districtName;
+&nbsp;
+&nbsp;    private String provinceName;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

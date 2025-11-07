@@ -1,0 +1,483 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BuyerServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: BuyerServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuyerServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (7/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53.4%
+  </span>
+  <span class="absValue">
+    (31/58)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.4%
+  </span>
+  <span class="absValue">
+    (130/190)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.AccountStatus;
+&nbsp;import Green_trade.green_trade_platform.enumerate.OrderStatus;
+&nbsp;import Green_trade.green_trade_platform.exception.*;
+&nbsp;import Green_trade.green_trade_platform.model.*;
+&nbsp;import Green_trade.green_trade_platform.repository.*;
+&nbsp;import Green_trade.green_trade_platform.request.MailRequest;
+&nbsp;import Green_trade.green_trade_platform.request.PlaceOrderRequest;
+&nbsp;import Green_trade.green_trade_platform.model.Wallet;
+&nbsp;import Green_trade.green_trade_platform.repository.BuyerRepository;
+&nbsp;import Green_trade.green_trade_platform.repository.WalletRepository;
+&nbsp;import Green_trade.green_trade_platform.request.ProfileRequest;
+&nbsp;import Green_trade.green_trade_platform.request.UpdateBuyerProfileRequest;
+&nbsp;import Green_trade.green_trade_platform.util.DateUtils;
+&nbsp;import Green_trade.green_trade_platform.util.FileUtils;
+&nbsp;import Green_trade.green_trade_platform.util.StringUtils;
+&nbsp;import jakarta.persistence.EntityNotFoundException;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.PageRequest;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.data.domain.Sort;
+&nbsp;import org.springframework.security.core.Authentication;
+&nbsp;import org.springframework.security.core.context.SecurityContextHolder;
+&nbsp;import org.springframework.security.core.userdetails.UsernameNotFoundException;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.web.multipart.MultipartFile;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.util.*;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@AllArgsConstructor
+&nbsp;public class BuyerServiceImpl {
+&nbsp;    private final BuyerRepository buyerRepository;
+&nbsp;    private final CloudinaryService cloudinaryService;
+&nbsp;    //    private final DateUtils dateUtils;
+&nbsp;//    private final FileUtils fileUtils;
+&nbsp;    private final WalletRepository walletRepository;
+&nbsp;    private final OrderRepository orderRepository;
+&nbsp;    //    private final PaymentRepository paymentRepository;
+&nbsp;//    private final TransactionRepository transactionRepository;
+&nbsp;    private final ShippingPartnerRepository shippingPartnerRepository;
+&nbsp;    private final StringUtils stringUtils;
+&nbsp;    private final WalletServiceImpl walletService;
+&nbsp;    private final PostProductRepository postProductRepository;
+&nbsp;    private final MailServiceImpl mailSender;
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; uploadBuyerProfile(ProfileRequest request, MultipartFile avatarFile) throws IOException {
+<b class="fc">&nbsp;        Buyer buyer = getCurrentUser();</b>
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;String, Object&gt; body = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        String avatarUrl = (buyer.getAvatarUrl() == null) ? &quot;&quot; : buyer.getAvatarUrl();</b>
+<b class="fc">&nbsp;        if (!avatarUrl.isEmpty()) {</b>
+<b class="fc">&nbsp;            throw new DuplicateProfileException(&quot;Profile already exits.&quot;);</b>
+&nbsp;        }
+&nbsp;        // // Check date and parse into LocalDate
+&nbsp;        //// LocalDate dob = dateUtils.parseAndValidateDob(request.getDob());
+<b class="fc">&nbsp;        LocalDate dob = LocalDate.parse(request.getDob());</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Buyer service] Profile request: {}&quot;, request.toString());</b>
+&nbsp;
+&nbsp;        try {
+<b class="pc">&nbsp;            if (!avatarFile.isEmpty() &amp;&amp; !avatarFile.isEmpty()) {</b>
+<b class="fc">&nbsp;                Map&lt;String, String&gt; uploadResult = cloudinaryService.upload(avatarFile,</b>
+<b class="fc">&nbsp;                        &quot;buyers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/avatar&quot;);</b>
+<b class="fc">&nbsp;                avatarUrl = uploadResult.get(&quot;fileUrl&quot;);</b>
+<b class="fc">&nbsp;                buyer.setAvatarPublicId(uploadResult.get(&quot;publicId&quot;));</b>
+<b class="fc">&nbsp;                body.put(&quot;avatar&quot;, avatarUrl);</b>
+&nbsp;            }
+<b class="fc">&nbsp;            buyer.setAvatarUrl(avatarUrl);</b>
+<b class="fc">&nbsp;            buyer.setStreet(request.getStreet());</b>
+<b class="fc">&nbsp;            buyer.setWardName(request.getWardName());</b>
+<b class="fc">&nbsp;            buyer.setDistrictName(request.getDistrictName());</b>
+<b class="fc">&nbsp;            buyer.setProvinceName(request.getProvinceName());</b>
+<b class="fc">&nbsp;            buyer.setFullName(request.getFullName());</b>
+<b class="fc">&nbsp;            buyer.setPhoneNumber(request.getPhoneNumber());</b>
+<b class="fc">&nbsp;            buyer.setDob(dob);</b>
+<b class="fc">&nbsp;            buyer.setGender(request.getGender());</b>
+<b class="fc">&nbsp;            buyerRepository.save(buyer);</b>
+<b class="fc">&nbsp;            body.put(&quot;profile&quot;, buyer);</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            throw new RuntimeException(e);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return body;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Buyer updateProfile(UpdateBuyerProfileRequest request, MultipartFile avatarFile) throws Exception {
+&nbsp;        try {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Update user profile service] Starting update profile service&quot;);</b>
+<b class="fc">&nbsp;            Buyer buyer = getCurrentUser();</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Update user profile service] Buyer&#39;s information: {}&quot;, buyer);</b>
+<b class="fc">&nbsp;            Long id = buyer.getBuyerId();</b>
+&nbsp;
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Update profile services] profile request: {}.&quot;, request);</b>
+<b class="pc">&nbsp;            buyer.setFullName(request.getFullName() == null ? &quot;&quot; : request.getFullName());</b>
+<b class="pc">&nbsp;            buyer.setEmail(request.getEmail() == null ? &quot;&quot; : request.getEmail());</b>
+<b class="fc">&nbsp;            buyer.setGender(request.getGender());</b>
+<b class="fc">&nbsp;            buyer.setDob(request.getDob());</b>
+<b class="pc">&nbsp;            buyer.setPhoneNumber(request.getPhoneNumber() == null ? &quot;&quot; : request.getPhoneNumber());</b>
+<b class="fc">&nbsp;            buyer.setStreet(request.getStreet());</b>
+<b class="fc">&nbsp;            buyer.setWardName(request.getWardName());</b>
+<b class="fc">&nbsp;            buyer.setDistrictName(request.getDistrictName());</b>
+<b class="fc">&nbsp;            buyer.setProvinceName(request.getProvinceName());</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Update profile services] set text data into buyer profile.&quot;);</b>
+&nbsp;
+&nbsp;            // delete old avatar on cloudinary
+<b class="pc">&nbsp;            if (avatarFile != null &amp;&amp; !avatarFile.isEmpty()) {</b>
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [Update profile services] Starting delete old avatar on Cloudinary.&quot;);</b>
+<b class="pc">&nbsp;                if (buyer.getAvatarUrl() != null) {</b>
+<b class="fc">&nbsp;                    boolean isDeleted = cloudinaryService.delete(</b>
+<b class="fc">&nbsp;                            buyer.getAvatarPublicId(),</b>
+<b class="fc">&nbsp;                            &quot;buyers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/avatar&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;                    if (!isDeleted) {</b>
+<b class="fc">&nbsp;                        log.info(&quot;&gt;&gt;&gt; [Update profile services] Error occur when deleting old avatar.&quot;);</b>
+<b class="fc">&nbsp;                        throw new ProfileException(&quot;Avatar Profile is deleted failed&quot;);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                    log.info(&quot;&gt;&gt;&gt; [Update profile services] Delete old avatar successfully.&quot;);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                // upload new avatar on cloudinary
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [Update profile services] Starting upload new avatar into Cloudinary&quot;);</b>
+<b class="fc">&nbsp;                Map&lt;String, String&gt; uploadResult = cloudinaryService.upload(</b>
+&nbsp;                        avatarFile,
+<b class="fc">&nbsp;                        &quot;buyers/&quot; + buyer.getBuyerId() + &quot;:&quot; + buyer.getUsername() + &quot;/avatar&quot;);</b>
+&nbsp;
+<b class="pc">&nbsp;                if (uploadResult == null) {</b>
+<b class="nc">&nbsp;                    log.info(&quot;&gt;&gt;&gt; [Update profile services] Error occur when uploading new avatar into Cloudinary.&quot;);</b>
+<b class="nc">&nbsp;                    throw new Exception(&quot;Avatar Profile is saved failed&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                log.info(&quot;&gt;&gt;&gt; [Update profile services] Avatar is uploaded into Cloudinary.&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;                buyer.setAvatarUrl(uploadResult.get(&quot;fileUrl&quot;));</b>
+<b class="fc">&nbsp;                buyer.setAvatarPublicId(uploadResult.get(&quot;publicId&quot;));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Update profile services] Update buyer profile successfully.&quot;);</b>
+<b class="fc">&nbsp;            return buyerRepository.save(buyer);</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Update profile services] Error at buyerServiceImpl: {}&quot;, e.getMessage());</b>
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Buyer getCurrentUser() {
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Buyer Service] Get current user: started.&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Buyer Service] Authentication: {}&quot;, authentication);</b>
+<b class="fc">&nbsp;        String username = authentication.getName();</b>
+&nbsp;
+<b class="fc">&nbsp;        return buyerRepository.findByUsername(username)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ProfileException(&quot;User is not existed: &quot; + username));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Buyer findBuyerById(Long id) {
+<b class="nc">&nbsp;        return buyerRepository.findById(id).orElseThrow(</b>
+<b class="nc">&nbsp;                () -&gt; new EntityNotFoundException(&quot;Can not find buyer with this id: &quot; + id)</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public Buyer getBuyerFromVnPayRequest(String vnpOtherType) {
+<b class="nc">&nbsp;        String[] temp = vnpOtherType.split(&quot; &quot;);</b>
+<b class="nc">&nbsp;        return buyerRepository.findById(Long.parseLong(temp[0]))</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;User is not existed: &quot; + temp[0]));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public BigDecimal getWalletBalance() {
+<b class="nc">&nbsp;        Buyer buyer = getCurrentUser();</b>
+<b class="nc">&nbsp;        return buyerRepository.findBalanceByBuyerId(buyer.getBuyerId());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isBuyerExisted(Long buyerId) {
+<b class="nc">&nbsp;        boolean result = false;</b>
+<b class="nc">&nbsp;        Optional&lt;Buyer&gt; buyerOpt = buyerRepository.findById(buyerId);</b>
+<b class="nc">&nbsp;        if (buyerOpt.isPresent()) {</b>
+<b class="nc">&nbsp;            result = true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isBuyerExisted(String username) {
+<b class="fc">&nbsp;        boolean result = false;</b>
+<b class="fc">&nbsp;        Optional&lt;Buyer&gt; buyerOpt = buyerRepository.findByUsername(username);</b>
+<b class="pc">&nbsp;        if (buyerOpt.isPresent()) {</b>
+<b class="fc">&nbsp;            result = true;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order placeOrderCOD(PlaceOrderRequest request) throws Exception {
+<b class="nc">&nbsp;        Optional&lt;Buyer&gt; buyerOpt = buyerRepository.findByUsername(request.getUsername());</b>
+<b class="nc">&nbsp;        Optional&lt;PostProduct&gt; postProductOpt = postProductRepository.findById(request.getPostProductId());</b>
+&nbsp;
+&nbsp;        // kiểm tra các thứ
+<b class="nc">&nbsp;        if (!isBuyerExisted(request.getUsername())) {</b>
+<b class="nc">&nbsp;            throw new ProfileException(&quot;User is not existed&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (postProductOpt.isEmpty()) {</b>
+<b class="nc">&nbsp;            throw new PostProductNotFound();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (postProductOpt.get().isSold()) {</b>
+<b class="nc">&nbsp;            throw new ProductSoldOutException();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // tạo mới một đơn hàng
+<b class="nc">&nbsp;        Order newOrder = Order.builder()</b>
+<b class="nc">&nbsp;                .buyer(buyerOpt.get())</b>
+<b class="nc">&nbsp;                .orderCode(null)</b>
+<b class="nc">&nbsp;                .shippingAddress(</b>
+<b class="nc">&nbsp;                        stringUtils.fullAddress(</b>
+<b class="nc">&nbsp;                                request.getStreet(),</b>
+<b class="nc">&nbsp;                                request.getWardName(),</b>
+<b class="nc">&nbsp;                                request.getDistrictName(),</b>
+<b class="nc">&nbsp;                                request.getProvinceName())</b>
+&nbsp;                )
+<b class="nc">&nbsp;                .phoneNumber(</b>
+<b class="nc">&nbsp;                        request.getPhoneNumber().isBlank() ? buyerOpt.get().getPhoneNumber() : request.getPhoneNumber())</b>
+<b class="nc">&nbsp;                .transactions(null)</b>
+<b class="nc">&nbsp;                .price(postProductOpt.get().getPrice())</b>
+<b class="nc">&nbsp;                .status(OrderStatus.PENDING)</b>
+<b class="nc">&nbsp;                .cancelOrderReason(null)</b>
+<b class="nc">&nbsp;                .canceledAt(null)</b>
+<b class="nc">&nbsp;                .build();</b>
+&nbsp;
+<b class="nc">&nbsp;        return orderRepository.save(newOrder);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order placeOrder(PlaceOrderRequest request, String shippingFee) throws Exception {
+&nbsp;        // kiểm tra các thứ
+<b class="pc">&nbsp;        if (!isBuyerExisted(request.getUsername())) {</b>
+<b class="nc">&nbsp;            throw new ProfileException(&quot;User is not existed&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [BuyerServiceImpl] checked buyer existed passed&quot;);</b>
+<b class="fc">&nbsp;        Optional&lt;Buyer&gt; buyerOpt = buyerRepository.findByUsername(request.getUsername());</b>
+<b class="pc">&nbsp;        if (!walletService.isBuyerHasWallet(buyerOpt.get())) {</b>
+<b class="nc">&nbsp;            throw new WalletNotFoundException(&quot;The wallet of User is not existed&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [BuyerServiceImpl] checked buyer wallet existed passed&quot;);</b>
+<b class="fc">&nbsp;        Optional&lt;PostProduct&gt; postProductOpt = postProductRepository.findById(request.getPostProductId());</b>
+<b class="pc">&nbsp;        if (postProductOpt.isEmpty()) {</b>
+<b class="nc">&nbsp;            throw new PostProductNotFound();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [BuyerServiceImpl] checked post product existed passed&quot;);</b>
+<b class="pc">&nbsp;        if (postProductOpt.get().isSold()) {</b>
+<b class="nc">&nbsp;            throw new ProductSoldOutException();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [BuyerServiceImpl] get post product passed&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        ShippingPartner shippingPartner = shippingPartnerRepository.findById(request.getShippingPartnerId())</b>
+<b class="fc">&nbsp;                .orElseThrow(</b>
+<b class="nc">&nbsp;                        () -&gt; new Exception(&quot;Shipping Partner is not existed&quot;));</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [BuyerServiceImpl] checked shipping partner existed passed&quot;);</b>
+&nbsp;
+&nbsp;        // tạo mới một đơn hàng
+<b class="fc">&nbsp;        Order newOrder = Order.builder()</b>
+<b class="fc">&nbsp;                .postProduct(postProductOpt.get())</b>
+<b class="fc">&nbsp;                .buyer(buyerOpt.get())</b>
+<b class="fc">&nbsp;                .orderCode(null)</b>
+<b class="fc">&nbsp;                .shippingAddress(</b>
+<b class="fc">&nbsp;                        stringUtils.fullAddress(</b>
+<b class="fc">&nbsp;                                request.getStreet(),</b>
+<b class="fc">&nbsp;                                request.getWardName(),</b>
+<b class="fc">&nbsp;                                request.getDistrictName(),</b>
+<b class="fc">&nbsp;                                request.getProvinceName())</b>
+&nbsp;                )
+<b class="fc">&nbsp;                .phoneNumber(</b>
+<b class="pc">&nbsp;                        request.getPhoneNumber().isBlank() ? buyerOpt.get().getPhoneNumber() : request.getPhoneNumber())</b>
+<b class="fc">&nbsp;                .shippingPartner(shippingPartner)</b>
+<b class="fc">&nbsp;                .shippingFee(new BigDecimal(shippingFee))</b>
+<b class="fc">&nbsp;                .transactions(null)</b>
+<b class="fc">&nbsp;                .price(postProductOpt.get().getPrice())</b>
+<b class="fc">&nbsp;                .status(OrderStatus.PENDING)</b>
+<b class="fc">&nbsp;                .cancelOrderReason(null)</b>
+<b class="fc">&nbsp;                .canceledAt(null)</b>
+<b class="fc">&nbsp;                .build();</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [BuyerServiceImpl] checked post product existed passed&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        return orderRepository.save(newOrder);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Order updateOrderCode(Order newOrder, String shippingCode) {
+<b class="nc">&nbsp;        newOrder.setOrderCode(shippingCode);</b>
+<b class="nc">&nbsp;        return orderRepository.save(newOrder);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Buyer findBuyerByUsername(String username) {
+<b class="nc">&nbsp;        Buyer foundBuyer = null;</b>
+<b class="nc">&nbsp;        Optional&lt;Buyer&gt; buyerOpt = buyerRepository.findByUsername(username);</b>
+<b class="nc">&nbsp;        if (buyerOpt.isPresent()) {</b>
+<b class="nc">&nbsp;            foundBuyer = buyerOpt.get();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return foundBuyer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Buyer findBuyerBySellerId(Long sellerId) {
+<b class="nc">&nbsp;        return buyerRepository.findBySeller_SellerId(sellerId).orElseThrow(</b>
+<b class="nc">&nbsp;                () -&gt; new IllegalArgumentException(&quot;Can not find buyer with this seller id.&quot;)</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    public Wallet getWallet() {
+<b class="nc">&nbsp;        Buyer buyer = getCurrentUser();</b>
+<b class="nc">&nbsp;        return walletRepository.findByBuyer(buyer).orElseThrow();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Page&lt;Buyer&gt; getListBuyers(int page, int size) {
+<b class="nc">&nbsp;        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;buyerId&quot;).ascending());</b>
+<b class="nc">&nbsp;        return buyerRepository.findAll(pageable);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void blockAccount(long id, String message, String activity) {
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Buyer Service] Block account: Started.&quot;);</b>
+<b class="fc">&nbsp;        Buyer buyer = buyerRepository.findById(id).orElseThrow(</b>
+<b class="nc">&nbsp;                () -&gt; new EntityNotFoundException(&quot;Can not find buyer with this id: &quot; + id)</b>
+&nbsp;        );
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Seller Service] Buyer info: {}&quot;, buyer.getFullName());</b>
+<b class="fc">&nbsp;        buyer.setActive(false);</b>
+<b class="fc">&nbsp;        if (activity.equalsIgnoreCase(&quot;block&quot;)) {</b>
+<b class="fc">&nbsp;            buyer.setActive(false);</b>
+<b class="fc">&nbsp;        } else if (activity.equalsIgnoreCase(&quot;unblock&quot;)) {</b>
+<b class="fc">&nbsp;            buyer.setActive(true);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Activity must be &#39;block&#39; or &#39;unblock&#39;&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        buyerRepository.save(buyer);</b>
+&nbsp;        // ✅ Soạn nội dung email HTML
+<b class="fc">&nbsp;        String action = activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;bị khóa&quot; : &quot;được mở khóa&quot;;</b>
+<b class="fc">&nbsp;        String htmlMessage = &quot;&quot;&quot;</b>
+&nbsp;                &lt;div style=&#39;font-family: Arial, sans-serif; line-height: 1.6; color: #333;&#39;&gt;
+&nbsp;                    &lt;h2 style=&#39;color: #4CAF50;&#39;&gt;🌿 Thông báo từ Green Trade Platform&lt;/h2&gt;
+&nbsp;                    &lt;p&gt;Xin chào &lt;strong&gt;%s&lt;/strong&gt;,&lt;/p&gt;
+&nbsp;                    &lt;p&gt;Tài khoản của bạn đã &lt;strong style=&#39;color:%s;&#39;&gt;%s&lt;/strong&gt; bởi hệ thống quản trị.&lt;/p&gt;
+&nbsp;                    &lt;p&gt;&lt;strong&gt;Lý do:&lt;/strong&gt; %s&lt;/p&gt;
+&nbsp;                    &lt;hr style=&#39;border: none; border-top: 1px solid #ccc;&#39;/&gt;
+&nbsp;                    &lt;p&gt;Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ 
+&nbsp;                    &lt;a href=&#39;mailto:green.trade.platform.391@gmail.com&#39; style=&#39;color:#4CAF50;font-weight:bold;&#39;&gt;
+&nbsp;                        đội ngũ hỗ trợ Green Trade
+&nbsp;                    &lt;/a&gt; để được giúp đỡ.&lt;/p&gt;
+&nbsp;                    &lt;p&gt;💚 Cảm ơn bạn đã tin tưởng sử dụng nền tảng Green Trade!&lt;/p&gt;
+&nbsp;                &lt;/div&gt;
+<b class="fc">&nbsp;                &quot;&quot;&quot;.formatted(</b>
+<b class="fc">&nbsp;                buyer.getFullName(),</b>
+<b class="fc">&nbsp;                activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;#e74c3c&quot; : &quot;#4CAF50&quot;,</b>
+<b class="fc">&nbsp;                action.toUpperCase(),</b>
+&nbsp;                message
+&nbsp;        );
+&nbsp;
+&nbsp;        // ✅ Gửi mail đẹp
+<b class="fc">&nbsp;        MailRequest mailRequest = MailRequest.builder()</b>
+<b class="fc">&nbsp;                .from(&quot;green.trade.platform.391@gmail.com&quot;)</b>
+<b class="fc">&nbsp;                .to(buyer.getEmail())</b>
+<b class="fc">&nbsp;                .subject(&quot;Green Trade - Thông báo &quot; + (activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;Khóa tài khoản&quot; : &quot;Mở khóa tài khoản&quot;))</b>
+<b class="fc">&nbsp;                .message(htmlMessage)</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        mailSender.sendBeautifulMail(mailRequest);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

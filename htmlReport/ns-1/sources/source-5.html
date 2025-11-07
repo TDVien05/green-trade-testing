@@ -1,0 +1,220 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CloudinaryService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: CloudinaryService (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CloudinaryService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.8%
+  </span>
+  <span class="absValue">
+    (11/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86.5%
+  </span>
+  <span class="absValue">
+    (32/37)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import com.cloudinary.Cloudinary;
+&nbsp;import com.cloudinary.utils.ObjectUtils;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.web.multipart.MultipartFile;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.UUID;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+<b class="fc">&nbsp;public class CloudinaryService {</b>
+&nbsp;    @Autowired
+&nbsp;    private Cloudinary cloudinary;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Upload file lên Cloudinary, trả về secure_url (String).
+&nbsp;     *
+&nbsp;     * @param file   MultipartFile từ request
+&nbsp;     * @param folder folder trên Cloudinary (ví dụ: &quot;sellers/123&quot;)
+&nbsp;     * @return secure_url
+&nbsp;     */
+&nbsp;    public Map&lt;String, String&gt; upload(MultipartFile file, String folder) throws IOException {
+<b class="fc">&nbsp;        String publicId = UUID.randomUUID().toString();</b>
+<b class="fc">&nbsp;        Map&lt;?, ?&gt; res = cloudinary.uploader().upload(</b>
+<b class="fc">&nbsp;                file.getBytes(),</b>
+<b class="fc">&nbsp;                ObjectUtils.asMap(</b>
+&nbsp;                        &quot;folder&quot;, folder,
+&nbsp;                        &quot;public_id&quot;, publicId,
+&nbsp;                        &quot;resource_type&quot;, &quot;auto&quot;
+&nbsp;                )
+&nbsp;        );
+&nbsp;
+<b class="fc">&nbsp;        String fileUrl = res.get(&quot;secure_url&quot;) != null</b>
+<b class="fc">&nbsp;                ? res.get(&quot;secure_url&quot;).toString()</b>
+<b class="fc">&nbsp;                : res.get(&quot;url&quot;) != null</b>
+<b class="fc">&nbsp;                ? res.get(&quot;url&quot;).toString()</b>
+<b class="fc">&nbsp;                : null;</b>
+&nbsp;
+<b class="fc">&nbsp;        return fileUrl != null ? Map.of(</b>
+&nbsp;                &quot;fileUrl&quot;, fileUrl,
+&nbsp;                &quot;publicId&quot;, publicId
+<b class="fc">&nbsp;        ) : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean delete(String publicId, String folder) {
+&nbsp;        try {
+<b class="pc">&nbsp;            String fullPublicId = folder != null &amp;&amp; !folder.isEmpty()</b>
+<b class="fc">&nbsp;                    ? folder + &quot;/&quot; + publicId</b>
+<b class="fc">&nbsp;                    : publicId;</b>
+&nbsp;
+<b class="fc">&nbsp;            Map&lt;?, ?&gt; res = cloudinary.uploader().destroy(</b>
+&nbsp;                    fullPublicId,
+<b class="fc">&nbsp;                    ObjectUtils.asMap(&quot;resource_type&quot;, &quot;image&quot;)</b>
+&nbsp;            );
+&nbsp;
+<b class="fc">&nbsp;            Object result = res.get(&quot;result&quot;);</b>
+<b class="fc">&nbsp;            return &quot;ok&quot;.equals(result); // Cloudinary trả về {&quot;result&quot;: &quot;ok&quot;} nếu xoá thành công</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.error(&quot;Delete image failed for public_id={} in folder={}, error={}&quot;, publicId, folder, e.getMessage());</b>
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; uploadFile(File file, String folder) {
+&nbsp;        try {
+<b class="fc">&nbsp;            Map&lt;?, ?&gt; res = cloudinary.uploader().upload(</b>
+&nbsp;                    file,
+<b class="fc">&nbsp;                    ObjectUtils.asMap(</b>
+&nbsp;                            &quot;folder&quot;, folder,
+&nbsp;                            &quot;resource_type&quot;, &quot;auto&quot;,  // ✅ đổi từ &quot;raw&quot; sang &quot;auto&quot; để Cloudinary tự nhận PDF
+&nbsp;                            &quot;type&quot;, &quot;upload&quot;,          // giữ nguyên: upload trực tiếp
+&nbsp;                            &quot;access_mode&quot;, &quot;public&quot;,   // cho phép truy cập công khai
+<b class="fc">&nbsp;                            &quot;use_filename&quot;, true,      // dùng tên file gốc</b>
+<b class="fc">&nbsp;                            &quot;unique_filename&quot;, false   // không thêm hậu tố ngẫu nhiên</b>
+&nbsp;                    )
+&nbsp;            );
+&nbsp;
+<b class="fc">&nbsp;            log.info(&quot;📤 Cloudinary upload result: {}&quot;, res);</b>
+&nbsp;
+<b class="pc">&nbsp;            String fileUrl = res.get(&quot;secure_url&quot;) != null</b>
+<b class="fc">&nbsp;                    ? res.get(&quot;secure_url&quot;).toString()</b>
+<b class="nc">&nbsp;                    : res.get(&quot;url&quot;) != null</b>
+<b class="nc">&nbsp;                    ? res.get(&quot;url&quot;).toString()</b>
+<b class="fc">&nbsp;                    : null;</b>
+&nbsp;
+<b class="pc">&nbsp;            return fileUrl != null ? Map.of(</b>
+&nbsp;                    &quot;fileUrl&quot;, fileUrl,
+<b class="fc">&nbsp;                    &quot;publicId&quot;, res.get(&quot;public_id&quot;).toString()</b>
+<b class="nc">&nbsp;            ) : null;</b>
+&nbsp;
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            log.error(&quot;❌ Upload file to Cloudinary failed: {}&quot;, e.getMessage(), e);</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-07 21:16</div>
+</div>
+</body>
+</html>

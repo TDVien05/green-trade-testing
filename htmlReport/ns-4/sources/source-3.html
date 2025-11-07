@@ -1,0 +1,718 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BuyerController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: BuyerController (Green_trade.green_trade_platform.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BuyerController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/165)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.controller;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.OrderStatus;
+&nbsp;import Green_trade.green_trade_platform.enumerate.WishListPriority;
+&nbsp;import Green_trade.green_trade_platform.exception.PaymentMethodNotSupportedException;
+&nbsp;import Green_trade.green_trade_platform.exception.PostProductNotFound;
+&nbsp;import Green_trade.green_trade_platform.exception.ProfileException;
+&nbsp;import Green_trade.green_trade_platform.exception.SelfPurchaseNotAllowedException;
+&nbsp;import Green_trade.green_trade_platform.mapper.*;
+&nbsp;import Green_trade.green_trade_platform.model.*;
+&nbsp;import Green_trade.green_trade_platform.repository.*;
+&nbsp;import Green_trade.green_trade_platform.request.PlaceOrderRequest;
+&nbsp;import Green_trade.green_trade_platform.request.ProfileRequest;
+&nbsp;import Green_trade.green_trade_platform.request.UpdateBuyerProfileRequest;
+&nbsp;import Green_trade.green_trade_platform.request.WishListRequest;
+&nbsp;import Green_trade.green_trade_platform.response.*;
+&nbsp;import Green_trade.green_trade_platform.service.implement.*;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import io.swagger.v3.oas.annotations.Parameter;
+&nbsp;import jakarta.validation.Valid;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.MediaType;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.security.access.prepost.PreAuthorize;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;import org.springframework.web.multipart.MultipartFile;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/api/v1/buyer&quot;)
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;public class BuyerController {
+&nbsp;    private final BuyerServiceImpl buyerService;
+&nbsp;    private final ResponseMapper responseMapper;
+&nbsp;    private final BuyerMapper buyerMapper;
+&nbsp;    private final WalletMapper walletMapper;
+&nbsp;    private final PaymentRepository paymentRepository;
+&nbsp;    private final TransactionServiceImpl transactionService;
+&nbsp;    private final OrderMapper orderMapper;
+&nbsp;    private final GhnServiceImpl ghnService;
+&nbsp;    private final BuyerRepository buyerRepository;
+&nbsp;    private final PostProductRepository postProductRepository;
+&nbsp;    private final TransactionRepository transactionRepository;
+&nbsp;    private final OrderRepository orderRepository;
+&nbsp;    private final OrderServiceImpl orderService;
+&nbsp;    private final PostProductServiceImpl postProductService;
+&nbsp;    private final PaymentServiceImpl paymentService;
+&nbsp;    private final SystemWalletServiceImpl systemWalletService;
+&nbsp;    private final WalletServiceImpl walletService;
+&nbsp;    private final WishListMapper wishListMapper;
+&nbsp;    private final WishListingServiceImpl wishListingService;
+&nbsp;    private final InvoiceServiceImpl invoiceService;
+&nbsp;
+&nbsp;    public BuyerController(
+&nbsp;            BuyerServiceImpl buyerService,
+&nbsp;            ResponseMapper responseMapper,
+&nbsp;            BuyerMapper buyerMapper,
+&nbsp;            WalletMapper walletMapper,
+&nbsp;            PaymentRepository paymentRepository,
+&nbsp;            TransactionServiceImpl transactionService,
+&nbsp;            OrderMapper orderMapper,
+&nbsp;            GhnServiceImpl ghnService,
+&nbsp;            BuyerRepository buyerRepository,
+&nbsp;            PostProductRepository postProductRepository,
+&nbsp;            TransactionRepository transactionRepository,
+&nbsp;            OrderRepository orderRepository,
+&nbsp;            OrderServiceImpl orderService,
+&nbsp;            PostProductServiceImpl postProductService,
+&nbsp;            PaymentServiceImpl paymentService,
+&nbsp;            SystemWalletServiceImpl systemWalletService,
+&nbsp;            WalletServiceImpl walletService,
+&nbsp;            WishListMapper wishListMapper,
+&nbsp;            WishListingServiceImpl wishListingService,
+<b class="nc">&nbsp;            InvoiceServiceImpl invoiceService) {</b>
+<b class="nc">&nbsp;        this.buyerService = buyerService;</b>
+<b class="nc">&nbsp;        this.responseMapper = responseMapper;</b>
+<b class="nc">&nbsp;        this.buyerMapper = buyerMapper;</b>
+<b class="nc">&nbsp;        this.walletMapper = walletMapper;</b>
+<b class="nc">&nbsp;        this.paymentRepository = paymentRepository;</b>
+<b class="nc">&nbsp;        this.transactionService = transactionService;</b>
+<b class="nc">&nbsp;        this.orderMapper = orderMapper;</b>
+<b class="nc">&nbsp;        this.ghnService = ghnService;</b>
+<b class="nc">&nbsp;        this.buyerRepository = buyerRepository;</b>
+<b class="nc">&nbsp;        this.postProductRepository = postProductRepository;</b>
+<b class="nc">&nbsp;        this.transactionRepository = transactionRepository;</b>
+<b class="nc">&nbsp;        this.orderRepository = orderRepository;</b>
+<b class="nc">&nbsp;        this.orderService = orderService;</b>
+<b class="nc">&nbsp;        this.postProductService = postProductService;</b>
+<b class="nc">&nbsp;        this.paymentService = paymentService;</b>
+<b class="nc">&nbsp;        this.systemWalletService = systemWalletService;</b>
+<b class="nc">&nbsp;        this.walletService = walletService;</b>
+<b class="nc">&nbsp;        this.wishListMapper = wishListMapper;</b>
+<b class="nc">&nbsp;        this.wishListingService = wishListingService;</b>
+<b class="nc">&nbsp;        this.invoiceService = invoiceService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Upload buyer profile&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Allows a buyer to upload or update their profile information including full name,
+&nbsp;                        shipping address, contact details, and avatar image.  
+&nbsp;                        This endpoint accepts multipart form data containing both profile fields and an image file.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The buyer submits profile data (name, address, etc.) and an avatar image via multipart form.
+&nbsp;                        2. The system uploads the avatar file, updates the buyer&#39;s profile in the database, 
+&nbsp;                           and returns the updated profile data.
+&nbsp;                        3. Only authenticated buyers (ROLE_BUYER) can access this endpoint.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Buyers updating their account profile for the first time.
+&nbsp;                        - Allowing users to change their avatar or update shipping address information.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - Requires valid JWT token with `ROLE_BUYER` authority.
+&nbsp;                        - The uploaded image must comply with allowed size and format restrictions.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(
+&nbsp;            value = &quot;/upload-profile&quot;,
+&nbsp;            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+&nbsp;    )
+&nbsp;    public ResponseEntity&lt;?&gt; uploadBuyerProfile(@Parameter(description = &quot;profile request for buyer&quot;)
+&nbsp;                                                @Valid @ModelAttribute ProfileRequest profileRequest,
+&nbsp;                                                @Parameter(description = &quot;avatar of buyer&quot;)
+&nbsp;                                                @RequestPart(value = &quot;avatar_url&quot;, required = true) MultipartFile avatarFile) throws IOException {
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; body = buyerService.uploadBuyerProfile(profileRequest, avatarFile);</b>
+<b class="nc">&nbsp;        Buyer tempProfile = (Buyer) body.get(&quot;profile&quot;);</b>
+<b class="nc">&nbsp;        return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;UPLOAD PROFILE SUCCESS.&quot;,
+<b class="nc">&nbsp;                buyerMapper.toDto(tempProfile),</b>
+&nbsp;                null));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Update Buyer Profile&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Allows a buyer to update their existing profile information, including full name, 
+&nbsp;                        contact details, shipping address, and optionally their avatar image.  
+&nbsp;                        This endpoint accepts multipart/form-data requests where both text fields and a file may be included.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The buyer submits updated profile details and, optionally, a new avatar image.
+&nbsp;                        2. The system updates the corresponding fields in the buyer’s profile.
+&nbsp;                        3. If a new avatar is provided, the image is uploaded and replaces the previous one.
+&nbsp;                        4. The response returns the updated buyer profile information.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Buyers updating their personal information such as name, phone number, or address.
+&nbsp;                        - Changing or removing an avatar profile picture.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - Requires authentication via JWT token (ROLE_BUYER).
+&nbsp;                        - Only the owner of the account can update their own profile.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PutMapping(
+&nbsp;            value = &quot;/update-profile&quot;,
+&nbsp;            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;BuyerResponse, Object&gt;&gt; updateProfile(
+&nbsp;            @Valid @ModelAttribute UpdateBuyerProfileRequest updateProfileRequest,
+&nbsp;            @RequestPart(value = &quot;avatar_url&quot;, required = false) MultipartFile avatarFile
+&nbsp;    ) throws Exception {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed came updateProfile API&quot;);</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; updateProfileRequest: {}&quot;, updateProfileRequest);</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; avatarFile: {}&quot;, avatarFile);</b>
+&nbsp;
+<b class="nc">&nbsp;        Buyer buyer = buyerService.updateProfile(updateProfileRequest, avatarFile);</b>
+<b class="nc">&nbsp;        BuyerResponse responseData = buyerMapper.toDto(buyer);</b>
+&nbsp;
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(</b>
+<b class="nc">&nbsp;                responseMapper.toDto(</b>
+&nbsp;                        true,
+&nbsp;                        &quot;UPDATED PROFILE SUCCESSFULLY&quot;,
+&nbsp;                        responseData,
+&nbsp;                        null
+&nbsp;                )
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Get buyer profile&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Retrieves the profile information of the currently authenticated buyer.  
+&nbsp;                        The client must include a valid JWT access token in the `Authorization` header.  
+&nbsp;                        The system will decode the token, identify the buyer, and return their corresponding profile details.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The client sends a `GET /profile` request with an Authorization header:  
+&nbsp;                           `Authorization: Bearer &lt;access_token&gt;`
+&nbsp;                        2. The system validates the access token.
+&nbsp;                        3. The system identifies the buyer associated with the token.
+&nbsp;                        4. The buyer’s profile is fetched and returned as a response.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Retrieving current logged-in buyer’s profile for display in their dashboard.
+&nbsp;                        - Ensuring front-end applications can show user-specific information without manually passing user IDs.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - Requires a valid access token (`ROLE_BUYER`).
+&nbsp;                        - Access is limited to the authenticated buyer’s own profile.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @GetMapping(&quot;/profile&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;Object, Object&gt;&gt; getProfile() {
+&nbsp;        try {
+<b class="nc">&nbsp;            Buyer buyer = buyerService.getCurrentUser();</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(true,</b>
+&nbsp;                    &quot;Get user profile successfully.&quot;,
+<b class="nc">&nbsp;                    buyerMapper.toDto(buyer),</b>
+&nbsp;                    null));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.internalServerError().body(responseMapper.toDto(false,</b>
+&nbsp;                    &quot;Error occur during get user profile.&quot;,
+&nbsp;                    null, e));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Get user wallet.&quot;,
+&nbsp;            description = &quot;Front-end put access token in the header request. &quot; +
+&nbsp;                    &quot;Back-end will give user&#39;s wallet information.&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @GetMapping(&quot;/wallet&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;Object, Object&gt;&gt; getWallet() {
+&nbsp;        try {
+<b class="nc">&nbsp;            Wallet wallet = buyerService.getWallet();</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(true,</b>
+&nbsp;                    &quot;Get wallet&#39;s information successfully.&quot;,
+<b class="nc">&nbsp;                    walletMapper.toDto(wallet), null));</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.internalServerError().body(responseMapper.toDto(false,</b>
+&nbsp;                    &quot;Get wallet information failed.&quot;,
+&nbsp;                    null, e));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Place a new order&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint allows a buyer to place a new order in the Green Trade platform.
+&nbsp;                    &lt;br&gt;&lt;br&gt;
+&nbsp;                    Workflow:
+&nbsp;                    &lt;ul&gt;
+&nbsp;                        &lt;li&gt;Validate the payment method and buyer information.&lt;/li&gt;
+&nbsp;                        &lt;li&gt;Fetch the product and verify its availability.&lt;/li&gt;
+&nbsp;                        &lt;li&gt;Reject the request if the buyer attempts to purchase their own product.&lt;/li&gt;
+&nbsp;                        &lt;li&gt;Calculate the shipping fee through the GHN API (depending on COD or online payment).&lt;/li&gt;
+&nbsp;                        &lt;li&gt;Create a new order, transaction, and GHN shipping order.&lt;/li&gt;
+&nbsp;                        &lt;li&gt;Return a response containing the new order details and GHN order code.&lt;/li&gt;
+&nbsp;                    &lt;/ul&gt;
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @PostMapping(&quot;/place-order&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;OrderResponse, Object&gt;&gt; placeOrder(@Valid @RequestBody PlaceOrderRequest request) throws Exception {
+<b class="nc">&nbsp;        Order newOrder = null;</b>
+<b class="nc">&nbsp;        RestResponse&lt;OrderResponse, Object&gt; response = null;</b>
+<b class="nc">&nbsp;        OrderResponse responseData = null;</b>
+<b class="nc">&nbsp;        String shippingFee = &quot;0&quot;;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [START] placeOrder&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Fetch payment&quot;);</b>
+<b class="nc">&nbsp;            Payment payment = paymentService.findPaymentMethodById(request.getPaymentId());</b>
+<b class="nc">&nbsp;            if (payment == null) {</b>
+<b class="nc">&nbsp;                throw new PaymentMethodNotSupportedException();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Fetch buyer&quot;);</b>
+<b class="nc">&nbsp;            Buyer buyer = buyerService.findBuyerByUsername(request.getUsername());</b>
+<b class="nc">&nbsp;            if (buyer == null) {</b>
+<b class="nc">&nbsp;                throw new ProfileException(&quot;Buyer with Username: &quot; + request.getUsername() + &quot;is not existed&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Fetch post product&quot;);</b>
+<b class="nc">&nbsp;            PostProduct postProduct = postProductService.findPostProductById(request.getPostProductId());</b>
+<b class="nc">&nbsp;            if (postProduct == null) {</b>
+<b class="nc">&nbsp;                throw new PostProductNotFound();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (buyer.getBuyerId() == postProduct.getSeller().getBuyer().getBuyerId()) {</b>
+<b class="nc">&nbsp;                throw new SelfPurchaseNotAllowedException();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Calculate shipping fee&quot;);</b>
+<b class="nc">&nbsp;            if (payment.getGatewayName().equals(&quot;COD&quot;)) {</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Calculate shipping fee COD&quot;);</b>
+<b class="nc">&nbsp;                shippingFee = ghnService.getShippingFeeDto(buyer, postProduct.getSeller(), postProduct, postProduct.getPrice().intValue()).get(&quot;service_fee&quot;);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Calculate shipping fee Online Payment&quot;);</b>
+<b class="nc">&nbsp;                shippingFee = ghnService.getShippingFeeDto(buyer, postProduct.getSeller(), postProduct, 0).get(&quot;service_fee&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Place new order&quot;);</b>
+<b class="nc">&nbsp;            newOrder = buyerService.placeOrder(request, shippingFee);</b>
+&nbsp;
+<b class="nc">&nbsp;            if (&quot;COD&quot;.equalsIgnoreCase(payment.getGatewayName())) {</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; COD payment flow&quot;);</b>
+<b class="nc">&nbsp;                Transaction transaction = transactionService.checkoutCODPayment(</b>
+<b class="nc">&nbsp;                        request.getUsername(),</b>
+<b class="nc">&nbsp;                        request.getPostProductId(),</b>
+<b class="nc">&nbsp;                        request.getPaymentId(),</b>
+&nbsp;                        newOrder
+&nbsp;                );
+<b class="nc">&nbsp;                List&lt;Transaction&gt; transactions = transactionService.getTransactionsOfOrder(newOrder);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed get transactions&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                newOrder = orderService.updateOrderTransactions(newOrder, transactions);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed update transactions&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                String orderShippingCode = ghnService.createOrderShippingResponseToDto(</b>
+<b class="nc">&nbsp;                        newOrder, transactionRepository.findAllByOrder(newOrder).getLast().getPayment()</b>
+<b class="nc">&nbsp;                ).get(&quot;orderCode&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                String totalServiceFee = ghnService.createOrderShippingResponseToDto(</b>
+<b class="nc">&nbsp;                        newOrder, transactionRepository.findAllByOrder(newOrder).getLast().getPayment()</b>
+<b class="nc">&nbsp;                ).get(&quot;totalFee&quot;);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed get orderShippingCode&quot;);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; orderShippingCode: {}&quot;, orderShippingCode);</b>
+&nbsp;
+<b class="nc">&nbsp;                newOrder = orderService.updateOrderCode(orderShippingCode, newOrder);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed set Order Code&quot;);</b>
+<b class="nc">&nbsp;                SystemWallet systemWallet = systemWalletService.createEscrowRecordAfterReduceFeeCOD(newOrder, totalServiceFee);</b>
+<b class="nc">&nbsp;                newOrder = orderService.updateSystemWallet(systemWallet, newOrder);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Wallet payment flow&quot;);</b>
+<b class="nc">&nbsp;                Transaction transaction = transactionService.checkoutWalletPayment(</b>
+<b class="nc">&nbsp;                        request.getUsername(),</b>
+<b class="nc">&nbsp;                        request.getPostProductId(),</b>
+<b class="nc">&nbsp;                        request.getPaymentId(),</b>
+&nbsp;                        newOrder
+&nbsp;                );
+<b class="nc">&nbsp;                List&lt;Transaction&gt; transactions = transactionService.getTransactionsOfOrder(newOrder);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed get transactions&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                newOrder = orderService.updateOrderTransactions(newOrder, transactions);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed update transactions for order&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                newOrder = orderService.updateOrderStatus(newOrder, OrderStatus.PAID);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed update order status&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                String orderShippingCode = ghnService.createOrderShippingResponseToDto(</b>
+<b class="nc">&nbsp;                        newOrder, transactionRepository.findAllByOrder(newOrder).getLast().getPayment()).get(&quot;orderCode&quot;);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed get orderShippingCode: {}&quot;, orderShippingCode);</b>
+<b class="nc">&nbsp;                String totalServiceFee = ghnService.createOrderShippingResponseToDto(</b>
+<b class="nc">&nbsp;                        newOrder, transactionRepository.findAllByOrder(newOrder).getLast().getPayment()</b>
+<b class="nc">&nbsp;                ).get(&quot;totalFee&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                newOrder = orderService.updateOrderCode(orderShippingCode, newOrder);</b>
+<b class="nc">&nbsp;                log.info(&quot;&gt;&gt;&gt; Passed set Order Code&quot;);</b>
+<b class="nc">&nbsp;                SystemWallet systemWallet = systemWalletService.createEscrowRecordAfterReduceFeeWalletPayment(newOrder, totalServiceFee);</b>
+<b class="nc">&nbsp;                newOrder = orderService.updateSystemWallet(systemWallet, newOrder);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            Invoice newInvoice = invoiceService.createInvoiceInstance(newOrder, &quot;&quot;, 0);</b>
+<b class="nc">&nbsp;            invoiceService.generateInvoice(newInvoice.getId());</b>
+<b class="nc">&nbsp;            responseData = orderMapper.toDto(newOrder);</b>
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Passed created response&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;            postProductService.updateSoldStatus(true, postProduct);</b>
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; Build response&quot;);</b>
+<b class="nc">&nbsp;            response = responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;PLACE ORDERED SUCCESS&quot;,
+&nbsp;                    responseData,
+&nbsp;                    null
+&nbsp;            );
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [END] placeOrder success&quot;);</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;        } catch (Exception e) {
+&nbsp;//            newOrder.getPostProduct().setSold(false);
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Get wallet transaction history&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Retrieves a paginated list of wallet transactions for the currently authenticated user.
+&nbsp;                        This endpoint supports pagination through &#39;page&#39; and &#39;size&#39; query parameters.
+&nbsp;                        Each record in the result includes transaction details such as:
+&nbsp;                        - Transaction ID
+&nbsp;                        - Type (credit/debit)
+&nbsp;                        - Amount
+&nbsp;                        - Status
+&nbsp;                        - Timestamp
+&nbsp;                        - ...
+&nbsp;                        Use this API to display a user&#39;s transaction history in their dashboard or account page.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @GetMapping(&quot;/transaction-history&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getWalletTransactionHistory(
+&nbsp;            @RequestParam(name = &quot;page&quot;, defaultValue = &quot;0&quot;) int page,
+&nbsp;            @RequestParam(name = &quot;size&quot;, defaultValue = &quot;10&quot;) int size
+&nbsp;    ) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Buyer buyer = buyerService.getCurrentUser();</b>
+<b class="nc">&nbsp;            Page&lt;WalletTransaction&gt; transactions = walletService.getTransactionHistory(buyer, page, size);</b>
+&nbsp;
+<b class="nc">&nbsp;            Page&lt;WalletTransactionResponse&gt; responsePage = transactions.map(walletMapper::toTransactionResponse);</b>
+&nbsp;
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;GET ALL WALLET TRANSACTION SUCCESSFULLY.&quot;,
+&nbsp;                    responsePage, null
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;GET ALL WALLET TRANSACTION SUCCESSFULLY.&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Add a product post to the buyer&#39;s wish-list&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint allows an authenticated **buyer** to add a product post 
+&nbsp;                    (`PostProduct`) to their personal wish-list.
+&nbsp;                    
+&nbsp;                    - The buyer must be logged in.
+&nbsp;                    - The product (`PostProduct`) must exist and be active.
+&nbsp;                    - A seller **cannot** add their own product to their own wish-list (for fairness and data integrity).
+&nbsp;                    - If the product is already in the buyer&#39;s wish-list, the service may prevent duplication or update the record, depending on business logic.
+&nbsp;                    
+&nbsp;                    **Use case:**  
+&nbsp;                    Buyers use this API to save or bookmark products they are interested in purchasing later.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @PostMapping(&quot;/wish-list&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; addProductToWishList(@RequestBody WishListRequest request) {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Buyer Controller] Add product to wish list: Started.&quot;);</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            Buyer buyer = buyerService.getCurrentUser();</b>
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Buyer Controller] Buyer info: {}&quot;, buyer.getUsername());</b>
+&nbsp;
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Buyer Controller] Post product id: {}&quot;, request.getPostId());</b>
+<b class="nc">&nbsp;            PostProduct postProduct = postProductService.getPostProductById(request.getPostId());</b>
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Buyer Controller] Post product: {}&quot;, postProduct);</b>
+&nbsp;
+<b class="nc">&nbsp;            if (buyer.getSeller() == postProduct.getSeller()) {</b>
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Seller can not add your product into your wish-listing.&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            WishListing wishListing = wishListMapper.toEntity(request, buyer, postProduct);</b>
+&nbsp;
+<b class="nc">&nbsp;            WishListing savedWishList = wishListingService.addWishList(wishListing);</b>
+&nbsp;
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;ADD PRODUCT TO WISH LISTING SUCCESSFULLY.&quot;,
+<b class="nc">&nbsp;                    wishListMapper.toDto(savedWishList), null</b>
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;ADD PRODUCT TO WISH LISTING FAILED.&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Remove a product from the buyer&#39;s wish list&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint allows an authenticated **buyer** to remove a product post 
+&nbsp;                    from their personal wish list.
+&nbsp;                    
+&nbsp;                    - The `wishId` must correspond to an existing wish-list entry.
+&nbsp;                    - The buyer must own the wish-list entry; otherwise, access will be denied.
+&nbsp;                    - If the wish-list item does not exist or has already been removed, the API will return an appropriate error message.
+&nbsp;                    
+&nbsp;                    **Use case:**  
+&nbsp;                    Buyers use this endpoint when they no longer wish to keep a product in their saved wish-list.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @PostMapping(&quot;/remove-wish-list/{wishId}&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; removeWishList(@PathVariable(name = &quot;wishId&quot;) long id) {
+&nbsp;        try {
+<b class="nc">&nbsp;            wishListingService.removePostProduct(id);</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;REMOVE POST PRODUCT FROM WISH LIST SUCCESSFULLY.&quot;,
+&nbsp;                    null, null
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;REMOVE POST PRODUCT FROM WISH LIST FAILED.&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Retrieve the buyer&#39;s wish list&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint returns a paginated list of the buyer&#39;s wish-list items.
+&nbsp;                    
+&nbsp;                    - The buyer must be logged in.
+&nbsp;                    - Results can be optionally filtered by **priority** (e.g., HIGH, MEDIUM, LOW).
+&nbsp;                    - If no priority is specified, all wish-list items are returned.
+&nbsp;                    - Supports pagination via `page` and `size` parameters.
+&nbsp;                    
+&nbsp;                    **Use case:**  
+&nbsp;                    Buyers use this endpoint to view and manage the list of product posts they have added to their wish-list.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @GetMapping(&quot;/wish-list&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getWishList(
+&nbsp;            @RequestParam(name = &quot;page&quot;, defaultValue = &quot;0&quot;) int page,
+&nbsp;            @RequestParam(name = &quot;size&quot;, defaultValue = &quot;10&quot;) int size,
+&nbsp;            @RequestParam(name = &quot;priority&quot;, required = false) WishListPriority priority
+&nbsp;    ) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Buyer buyer = buyerService.getCurrentUser();</b>
+<b class="nc">&nbsp;            Page&lt;WishListing&gt; wishListings = wishListingService.getWishList(buyer, page, size, priority);</b>
+<b class="nc">&nbsp;            Page&lt;WishListingResponse&gt; mapped = wishListings.map(wishListMapper::toDto);</b>
+&nbsp;
+<b class="nc">&nbsp;            Map&lt;String, Object&gt; data = new LinkedHashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;            data.put(&quot;content&quot;, mapped.getContent());</b>
+<b class="nc">&nbsp;            data.put(&quot;pageNumber&quot;, mapped.getNumber());</b>
+<b class="nc">&nbsp;            data.put(&quot;pageSize&quot;, mapped.getSize());</b>
+<b class="nc">&nbsp;            data.put(&quot;totalElements&quot;, mapped.getTotalElements());</b>
+<b class="nc">&nbsp;            data.put(&quot;totalPages&quot;, mapped.getTotalPages());</b>
+<b class="nc">&nbsp;            data.put(&quot;first&quot;, mapped.isFirst());</b>
+<b class="nc">&nbsp;            data.put(&quot;last&quot;, mapped.isLast());</b>
+<b class="nc">&nbsp;            data.put(&quot;hasNext&quot;, mapped.hasNext());</b>
+<b class="nc">&nbsp;            data.put(&quot;hasPrevious&quot;, mapped.hasPrevious());</b>
+&nbsp;
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;GET WISH LIST SUCCESSFULLY.&quot;,
+&nbsp;                    data,
+&nbsp;                    null
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;GET WISH LIST FAILED.&quot;,
+&nbsp;                    null,
+<b class="nc">&nbsp;                    e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Retrieve paginated list of buyers&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                    This endpoint allows an **administrator** to retrieve a paginated list of all registered buyers in the system. 
+&nbsp;                    The request supports pagination parameters (`page`, `size`) and returns a structured response containing 
+&nbsp;                    buyer information and metadata.
+&nbsp;                    
+&nbsp;                    **Access Control:** Only users with the role `ROLE_ADMIN` can access this endpoint.
+&nbsp;                    
+&nbsp;                    **Response:**
+&nbsp;                    - On success: returns a paginated list of `BuyerResponse` objects with a success message.
+&nbsp;                    - On failure: returns an error response with failure status and message details.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PreAuthorize(&quot;hasRole(&#39;ROLE_ADMIN&#39;)&quot;)
+&nbsp;    @GetMapping(&quot;/list&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getBuyerList(
+&nbsp;            @RequestParam(name = &quot;page&quot;, defaultValue = &quot;0&quot;) int page,
+&nbsp;            @RequestParam(name = &quot;size&quot;, defaultValue = &quot;10&quot;) int size
+&nbsp;    ) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Page&lt;Buyer&gt; listBuyer = buyerService.getListBuyers(page, size);</b>
+<b class="nc">&nbsp;            Page&lt;BuyerResponse&gt; response = listBuyer.map(buyerMapper::toDto);</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;GET LIST BUYERS SUCCESSFULLY.&quot;,
+&nbsp;                    response, null
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;GET LIST BUYERS FAILED.&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

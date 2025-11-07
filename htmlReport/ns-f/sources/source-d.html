@@ -1,0 +1,102 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TransactionRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.repository</a>
+</div>
+
+<h1>Coverage Summary for Class: TransactionRepository (Green_trade.green_trade_platform.repository)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">TransactionRepository$MockitoMock$zPohjrVx</td>
+  </tr>
+  <tr>
+    <td class="name">TransactionRepository$MockitoMock$zPohjrVx$auxiliary$jRE3i4D2</td>
+  </tr>
+  <tr>
+    <td class="name">TransactionRepository$MockitoMock$zPohjrVx$auxiliary$lEuuKA5O</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.repository;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.TransactionStatus;
+&nbsp;import Green_trade.green_trade_platform.model.Order;
+&nbsp;import Green_trade.green_trade_platform.model.Transaction;
+&nbsp;import io.lettuce.core.dynamic.annotation.Param;
+&nbsp;import org.springframework.data.jpa.repository.JpaRepository;
+&nbsp;import org.springframework.data.jpa.repository.Query;
+&nbsp;import org.springframework.stereotype.Repository;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Repository
+&nbsp;public interface TransactionRepository extends JpaRepository&lt;Transaction, Long&gt; {
+&nbsp;    List&lt;Transaction&gt; findAllByOrder(Order order);
+&nbsp;
+&nbsp;    // Cách 2: dùng JPQL để tùy biến hơn
+&nbsp;    @Query(&quot;SELECT t FROM Transaction t WHERE t.order = :order AND t.status &lt;&gt; :status&quot;)
+&nbsp;    Optional&lt;Transaction&gt; findValidTransactionsByOrderId(@Param(&quot;order&quot;) Order order,
+&nbsp;                                                         @Param(&quot;status&quot;) TransactionStatus status);
+&nbsp;
+&nbsp;    Optional&lt;Transaction&gt; findFirstByOrderAndStatusNotOrderByCreatedAtDesc(Order order, TransactionStatus status);
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

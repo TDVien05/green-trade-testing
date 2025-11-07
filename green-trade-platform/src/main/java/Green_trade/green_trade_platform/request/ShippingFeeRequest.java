@@ -1,0 +1,18 @@
+package Green_trade.green_trade_platform.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ShippingFeeRequest {
+    private Long postId;
+    private String provinceName;
+    private String districtName;
+    private String wardName;
+    private Long paymentId;
+}

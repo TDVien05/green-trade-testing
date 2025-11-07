@@ -1,0 +1,348 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SellerServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: SellerServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SellerServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    72.7%
+  </span>
+  <span class="absValue">
+    (8/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (10/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.6%
+  </span>
+  <span class="absValue">
+    (87/94)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.AccountType;
+&nbsp;import Green_trade.green_trade_platform.enumerate.SellerStatus;
+&nbsp;import Green_trade.green_trade_platform.enumerate.VerifiedDecisionStatus;
+&nbsp;import Green_trade.green_trade_platform.exception.AuthException;
+&nbsp;import Green_trade.green_trade_platform.exception.ProfileException;
+&nbsp;import Green_trade.green_trade_platform.exception.SubscriptionExpiredException;
+&nbsp;import Green_trade.green_trade_platform.mapper.RegisterShopShippingServiceMapper;
+&nbsp;import Green_trade.green_trade_platform.mapper.SellerMapper;
+&nbsp;import Green_trade.green_trade_platform.mapper.SubscriptionMapper;
+&nbsp;import Green_trade.green_trade_platform.model.*;
+&nbsp;import Green_trade.green_trade_platform.repository.*;
+&nbsp;import Green_trade.green_trade_platform.request.ApproveSellerRequest;
+&nbsp;import Green_trade.green_trade_platform.request.MailRequest;
+&nbsp;import Green_trade.green_trade_platform.response.ApproveSellerResponse;
+&nbsp;import Green_trade.green_trade_platform.response.SellerResponse;
+&nbsp;import Green_trade.green_trade_platform.response.SubscriptionResponse;
+&nbsp;import Green_trade.green_trade_platform.service.SellerService;
+&nbsp;import com.fasterxml.jackson.core.JsonProcessingException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import jakarta.persistence.EntityNotFoundException;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.data.domain.*;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@RequiredArgsConstructor
+&nbsp;public class SellerServiceImpl implements SellerService {
+&nbsp;    private final SellerRepository sellerRepository;
+&nbsp;    private final SellerMapper sellerMapper;
+&nbsp;    private final SubscriptionRepository subscriptionRepository;
+&nbsp;    private final SubscriptionMapper subscriptionMapper;
+&nbsp;    private final AdminServiceImpl adminService;
+&nbsp;    private final BuyerServiceImpl buyerService;
+&nbsp;    private final NotificationRepository notificationRepository;
+&nbsp;    private final GhnServiceImpl ghnService;
+&nbsp;    private final RegisterShopShippingServiceMapper registerShopShippingServiceMapper;
+&nbsp;    private final BuyerRepository buyerRepository;
+&nbsp;    private final PostProductRepository postProductRepository;
+&nbsp;    private final MailServiceImpl mailSender;
+&nbsp;
+&nbsp;    public Seller createShippingShop(String dataRaw, Seller seller) throws JsonProcessingException {
+&nbsp;        try {
+<b class="fc">&nbsp;            ObjectMapper mapper = new ObjectMapper();</b>
+<b class="fc">&nbsp;            JsonNode root = mapper.readTree(dataRaw);</b>
+<b class="fc">&nbsp;            JsonNode data = root.path(&quot;data&quot;);</b>
+<b class="fc">&nbsp;            int shopId = data.path(&quot;shop_id&quot;).asInt();</b>
+<b class="fc">&nbsp;            seller.setGhnShopId(shopId + &quot;&quot;);</b>
+<b class="fc">&nbsp;            return sellerRepository.save(seller);</b>
+&nbsp;        } catch (Exception e) {
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public SubscriptionResponse checkServicePackageValidity(String username) throws Exception {
+&nbsp;        try {
+<b class="fc">&nbsp;            Buyer buyer = buyerRepository.findByUsername(username).orElseThrow(() -&gt; new ProfileException(&quot;Profile is not existed&quot;));</b>
+<b class="fc">&nbsp;            Optional&lt;Seller&gt; sellerOpt = sellerRepository.findByBuyer(buyer);</b>
+<b class="pc">&nbsp;            if (sellerOpt.isEmpty()) {</b>
+<b class="nc">&nbsp;                throw new ProfileException(&quot;Seller is not existed&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            Subscription subscription = subscriptionRepository.findFirstBySeller_SellerIdOrderByEndDayDesc(sellerOpt.get().getSellerId()).orElseThrow(() -&gt; new Exception(&quot;Seller doesn&#39;t subscribe service&quot;));</b>
+&nbsp;
+<b class="pc">&nbsp;            if (LocalDateTime.now().isAfter(subscription.getEndDay()) || subscription.getIsActive() == false || subscription.getRemainPost() == 0) {</b>
+<b class="fc">&nbsp;                throw new SubscriptionExpiredException();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            return subscriptionMapper.toDto(true, subscription.getEndDay(), subscription.getSubscriptionPackage().getName());</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.info(&quot;Error at checkServicePackageValidity: {}&quot;, e);</b>
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Page&lt;SellerResponse&gt; getAllPendingSeller(int page, int size) {
+<b class="fc">&nbsp;        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;sellerId&quot;).ascending());</b>
+<b class="fc">&nbsp;        Page&lt;Seller&gt; sellers = sellerRepository.findAllByStatus(SellerStatus.PENDING, pageable);</b>
+&nbsp;
+<b class="fc">&nbsp;        List&lt;SellerResponse&gt; responses = sellers.getContent()</b>
+<b class="fc">&nbsp;                .stream()</b>
+<b class="fc">&nbsp;                .map(sellerMapper::toDto)</b>
+<b class="fc">&nbsp;                .toList();</b>
+&nbsp;
+<b class="fc">&nbsp;        return new PageImpl&lt;&gt;(responses, pageable, sellers.getTotalElements());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Transactional
+&nbsp;    public ApproveSellerResponse handlePendingSeller(ApproveSellerRequest request) throws JsonProcessingException {
+<b class="fc">&nbsp;        Seller seller = sellerRepository.findById(request.getSellerId())</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ProfileException(&quot;Không tìm thấy hồ sơ seller này: &quot; + request.getSellerId())</b>
+&nbsp;                );
+&nbsp;
+&nbsp;        // Create mail request to send to seller
+<b class="fc">&nbsp;        MailRequest mailRequest = MailRequest.builder()</b>
+<b class="fc">&nbsp;                .from(&quot;green.trade.platform.391@gmail.com&quot;)</b>
+<b class="fc">&nbsp;                .to(seller.getBuyer().getEmail())</b>
+<b class="fc">&nbsp;                .subject(&quot;UPGRADE ACCOUNT RESULT&quot;)</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        Admin admin = adminService.getCurrentUser();</b>
+<b class="fc">&nbsp;        Notification notice = null;</b>
+<b class="fc">&nbsp;        ApproveSellerResponse response = ApproveSellerResponse.builder()</b>
+<b class="fc">&nbsp;                .sellerId(seller.getSellerId())</b>
+<b class="fc">&nbsp;                .reason(request.getMessage())</b>
+<b class="fc">&nbsp;                .decision(request.getDecision())</b>
+<b class="fc">&nbsp;                .decidedAt(LocalDateTime.now())</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        if (request.getDecision().equals(VerifiedDecisionStatus.APPROVED)) {</b>
+<b class="fc">&nbsp;            seller.setAdmin(admin);</b>
+<b class="fc">&nbsp;            seller.setStatus(SellerStatus.ACCEPTED);</b>
+<b class="fc">&nbsp;            Seller tempSeller = sellerRepository.save(seller);</b>
+<b class="fc">&nbsp;            Map&lt;String, Object&gt; ghnBody = registerShopShippingServiceMapper.toDto(seller);</b>
+<b class="fc">&nbsp;            tempSeller = createShippingShop(ghnService.registerShop(ghnBody), seller);</b>
+<b class="fc">&nbsp;            tempSeller = sellerRepository.save(seller);</b>
+&nbsp;
+<b class="fc">&nbsp;            notice = Notification.builder()</b>
+<b class="fc">&nbsp;                    .receiverId(seller.getSellerId())</b>
+<b class="fc">&nbsp;                    .type(AccountType.SELLER)</b>
+<b class="fc">&nbsp;                    .title(&quot;UPGRADE ACCOUNT INFORMATION RESULT&quot;)</b>
+<b class="fc">&nbsp;                    .content(request.getMessage())</b>
+<b class="fc">&nbsp;                    .createdAt(LocalDateTime.now())</b>
+<b class="fc">&nbsp;                    .build();</b>
+&nbsp;
+<b class="fc">&nbsp;            mailRequest.setMessage(&quot;&quot;&quot;</b>
+&nbsp;                    🎉 &lt;strong&gt;Chúc mừng bạn!&lt;/strong&gt;&lt;br&gt;&lt;br&gt;&quot; +
+&nbsp;                    &quot;Yêu cầu nâng cấp tài khoản của bạn đã được &lt;strong&gt;Green Trade&lt;/strong&gt; phê duyệt thành công.&lt;br&gt;&quot; +
+&nbsp;                    &quot;Từ bây giờ, bạn có thể đăng bán sản phẩm, quản lý đơn hàng và giao dịch trực tiếp với khách hàng.&lt;br&gt;&lt;br&gt;&quot; +
+&nbsp;                    &quot;Vui lòng tuân thủ &lt;a href=&#39;https://green-trade-platform.com/policies&#39; style=&#39;color:#4CAF50;font-weight:bold;&#39;&gt;chính sách người bán&lt;/a&gt; &quot; +
+&nbsp;                    &quot;để đảm bảo môi trường kinh doanh minh bạch và bền vững.&lt;br&gt;&lt;br&gt;&quot; +
+&nbsp;                    &quot;💚 Chúc bạn kinh doanh thuận lợi cùng Green Trade!&quot;&quot;&quot;);
+&nbsp;
+&nbsp;        } else {
+<b class="fc">&nbsp;            String reason = request.getMessage();</b>
+<b class="fc">&nbsp;            mailRequest.setMessage(&quot;&quot;&quot;</b>
+&nbsp;                    ⚠️ &lt;strong&gt;Rất tiếc!&lt;/strong&gt;&lt;br&gt;&lt;br&gt;
+&nbsp;                    Yêu cầu nâng cấp tài khoản lên Seller của bạn hiện chưa được phê duyệt.&lt;br&gt;
+&nbsp;                    Nguyên nhân có thể do thông tin cung cấp chưa đầy đủ hoặc chưa đáp ứng điều kiện của nền tảng.&lt;br&gt;&lt;br&gt;
+&nbsp;                    &lt;strong&gt;Lý do cụ thể:&lt;/strong&gt; %s&lt;br&gt;&lt;br&gt;
+&nbsp;                    Vui lòng kiểm tra lại hồ sơ và gửi yêu cầu mới sau khi hoàn thiện thông tin cần thiết.&lt;br&gt;&lt;br&gt;
+&nbsp;                    Nếu cần hỗ trợ, hãy liên hệ 
+&nbsp;                    &lt;a href=&#39;mailto:green.trade.platform.391@gmail.com&#39; style=&#39;color:#4CAF50;font-weight:bold;&#39;&gt;
+&nbsp;                        đội ngũ hỗ trợ Green Trade
+&nbsp;                    &lt;/a&gt; để được giúp đỡ.&lt;br&gt;&lt;br&gt;
+&nbsp;                    💚 Cảm ơn bạn đã quan tâm đến Green Trade Platform!
+<b class="fc">&nbsp;                    &quot;&quot;&quot;.formatted(reason));</b>
+&nbsp;
+<b class="fc">&nbsp;            sellerRepository.delete(seller);</b>
+<b class="fc">&nbsp;            notice = Notification.builder()</b>
+<b class="fc">&nbsp;                    .receiverId(seller.getBuyer().getBuyerId())</b>
+<b class="fc">&nbsp;                    .type(AccountType.BUYER)</b>
+<b class="fc">&nbsp;                    .title(&quot;UPGRADE ACCOUNT INFORMATION RESULT&quot;)</b>
+<b class="fc">&nbsp;                    .content(request.getMessage())</b>
+<b class="fc">&nbsp;                    .createdAt(LocalDateTime.now())</b>
+<b class="fc">&nbsp;                    .build();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        notificationRepository.save(notice);</b>
+<b class="fc">&nbsp;        response.setNotification(notice);</b>
+<b class="fc">&nbsp;        mailSender.sendBeautifulMail(mailRequest);</b>
+<b class="fc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Seller getCurrentUser() {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Seller Service] Get current user.&quot;);</b>
+<b class="nc">&nbsp;        Buyer buyer = buyerService.getCurrentUser();</b>
+<b class="nc">&nbsp;        return sellerRepository.findByBuyer(buyer).orElseThrow(</b>
+<b class="nc">&nbsp;                () -&gt; new AuthException(&quot;User not existed.&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Page&lt;Seller&gt; getSellerList(int page, int size) {
+<b class="nc">&nbsp;        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;sellerId&quot;).ascending());</b>
+<b class="nc">&nbsp;        return sellerRepository.findAllByStatus(SellerStatus.ACCEPTED, pageable);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void blockAccount(long id, String message, String activity) {
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Seller Service] Block account: Started.&quot;);</b>
+<b class="fc">&nbsp;        Buyer buyer = buyerRepository.findBySeller_SellerId(id).orElseThrow(</b>
+<b class="fc">&nbsp;                () -&gt; new EntityNotFoundException(&quot;Can not find seller with this seller id: &quot; + id)</b>
+&nbsp;        );
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Seller Service] Buyer info: {}&quot;, buyer.getFullName());</b>
+<b class="fc">&nbsp;        buyer.setActive(false);</b>
+<b class="fc">&nbsp;        buyerRepository.save(buyer);</b>
+&nbsp;        // ✅ Soạn nội dung email HTML
+<b class="pc">&nbsp;        String action = activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;bị khóa&quot; : &quot;được mở khóa&quot;;</b>
+<b class="fc">&nbsp;        String htmlMessage = &quot;&quot;&quot;</b>
+&nbsp;                &lt;div style=&#39;font-family: Arial, sans-serif; line-height: 1.6; color: #333;&#39;&gt;
+&nbsp;                    &lt;h2 style=&#39;color: #4CAF50;&#39;&gt;🌿 Thông báo từ Green Trade Platform&lt;/h2&gt;
+&nbsp;                    &lt;p&gt;Xin chào &lt;strong&gt;%s&lt;/strong&gt;,&lt;/p&gt;
+&nbsp;                    &lt;p&gt;Tài khoản của bạn đã &lt;strong style=&#39;color:%s;&#39;&gt;%s&lt;/strong&gt; bởi hệ thống quản trị.&lt;/p&gt;
+&nbsp;                    &lt;p&gt;&lt;strong&gt;Lý do:&lt;/strong&gt; %s&lt;/p&gt;
+&nbsp;                    &lt;hr style=&#39;border: none; border-top: 1px solid #ccc;&#39;/&gt;
+&nbsp;                    &lt;p&gt;Nếu bạn cho rằng đây là nhầm lẫn, vui lòng liên hệ 
+&nbsp;                    &lt;a href=&#39;mailto:green.trade.platform.391@gmail.com&#39; style=&#39;color:#4CAF50;font-weight:bold;&#39;&gt;
+&nbsp;                        đội ngũ hỗ trợ Green Trade
+&nbsp;                    &lt;/a&gt; để được giúp đỡ.&lt;/p&gt;
+&nbsp;                    &lt;p&gt;💚 Cảm ơn bạn đã tin tưởng sử dụng nền tảng Green Trade!&lt;/p&gt;
+&nbsp;                &lt;/div&gt;
+<b class="fc">&nbsp;                &quot;&quot;&quot;.formatted(</b>
+<b class="fc">&nbsp;                buyer.getFullName(),</b>
+<b class="pc">&nbsp;                activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;#e74c3c&quot; : &quot;#4CAF50&quot;,</b>
+<b class="fc">&nbsp;                action.toUpperCase(),</b>
+&nbsp;                message
+&nbsp;        );
+&nbsp;
+&nbsp;        // ✅ Gửi mail đẹp
+<b class="fc">&nbsp;        MailRequest mailRequest = MailRequest.builder()</b>
+<b class="fc">&nbsp;                .from(&quot;green.trade.platform.391@gmail.com&quot;)</b>
+<b class="fc">&nbsp;                .to(buyer.getEmail())</b>
+<b class="pc">&nbsp;                .subject(&quot;Green Trade - Thông báo &quot; + (activity.equalsIgnoreCase(&quot;block&quot;) ? &quot;Khóa tài khoản&quot; : &quot;Mở khóa tài khoản&quot;))</b>
+<b class="fc">&nbsp;                .message(htmlMessage)</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        mailSender.sendBeautifulMail(mailRequest);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;PostProduct&gt; getListPostProduct(Seller seller) {
+<b class="fc">&nbsp;        return postProductRepository.findAllBySeller(seller);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

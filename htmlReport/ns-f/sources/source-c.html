@@ -1,0 +1,99 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > WishListingRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.repository</a>
+</div>
+
+<h1>Coverage Summary for Class: WishListingRepository (Green_trade.green_trade_platform.repository)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">WishListingRepository$MockitoMock$sbYSmO5s</td>
+  </tr>
+  <tr>
+    <td class="name">WishListingRepository$MockitoMock$sbYSmO5s$auxiliary$waIHzYJP</td>
+  </tr>
+  <tr>
+    <td class="name">WishListingRepository$MockitoMock$sbYSmO5s$auxiliary$XKtXMSOg</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.repository;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.WishListPriority;
+&nbsp;import Green_trade.green_trade_platform.model.Buyer;
+&nbsp;import Green_trade.green_trade_platform.model.PostProduct;
+&nbsp;import Green_trade.green_trade_platform.model.WishListing;
+&nbsp;import io.lettuce.core.dynamic.annotation.Param;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.data.jpa.repository.JpaRepository;
+&nbsp;import org.springframework.data.jpa.repository.Query;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;public interface WishListingRepository extends JpaRepository&lt;WishListing, Long&gt; {
+&nbsp;    Page&lt;WishListing&gt; findByBuyer_BuyerId(Long buyerId, Pageable pageable);
+&nbsp;
+&nbsp;    Page&lt;WishListing&gt; findByBuyer_BuyerIdAndPriority(Long buyerId, WishListPriority priority, Pageable pageable);
+&nbsp;
+&nbsp;    @Query(&quot;SELECT w.postProduct FROM WishListing w WHERE w.id = :wishId&quot;)
+&nbsp;    Optional&lt;PostProduct&gt; findPostProductByWishListId(@Param(&quot;wishId&quot;) Long wishId);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

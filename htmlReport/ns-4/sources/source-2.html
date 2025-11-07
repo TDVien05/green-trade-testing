@@ -1,0 +1,616 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AuthController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: AuthController (Green_trade.green_trade_platform.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AuthController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45%
+  </span>
+  <span class="absValue">
+    (9/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.6%
+  </span>
+  <span class="absValue">
+    (58/99)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.controller;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.enumerate.AccountStatus;
+&nbsp;import Green_trade.green_trade_platform.enumerate.SellerStatus;
+&nbsp;import Green_trade.green_trade_platform.exception.AuthException;
+&nbsp;import Green_trade.green_trade_platform.mapper.AdminMapper;
+&nbsp;import Green_trade.green_trade_platform.mapper.AuthMapper;
+&nbsp;import Green_trade.green_trade_platform.mapper.BuyerMapper;
+&nbsp;import Green_trade.green_trade_platform.mapper.ResponseMapper;
+&nbsp;import Green_trade.green_trade_platform.model.Admin;
+&nbsp;import Green_trade.green_trade_platform.model.Buyer;
+&nbsp;import Green_trade.green_trade_platform.model.Seller;
+&nbsp;import Green_trade.green_trade_platform.repository.SellerRepository;
+&nbsp;import Green_trade.green_trade_platform.request.*;
+&nbsp;import Green_trade.green_trade_platform.response.AdminAuthResponse;
+&nbsp;import Green_trade.green_trade_platform.response.AuthResponse;
+&nbsp;import Green_trade.green_trade_platform.response.BuyerResponse;
+&nbsp;import Green_trade.green_trade_platform.response.RestResponse;
+&nbsp;import Green_trade.green_trade_platform.service.implement.AuthServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.service.implement.RedisTokenService;
+&nbsp;import Green_trade.green_trade_platform.service.implement.SignInServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.service.implement.SignUpServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.util.JwtUtils;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import jakarta.validation.Valid;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.checkerframework.checker.units.qual.A;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.security.access.prepost.PreAuthorize;
+&nbsp;import org.springframework.security.core.Authentication;
+&nbsp;import org.springframework.security.core.context.SecurityContextHolder;
+&nbsp;import org.springframework.web.bind.annotation.PostMapping;
+&nbsp;import org.springframework.web.bind.annotation.RequestBody;
+&nbsp;import org.springframework.web.bind.annotation.RequestMapping;
+&nbsp;import org.springframework.web.bind.annotation.RestController;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@RestController
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@RequestMapping(&quot;/api/v1/auth&quot;)
+&nbsp;@AllArgsConstructor
+&nbsp;public class AuthController {
+&nbsp;
+&nbsp;    private final BuyerMapper buyerMapper;
+&nbsp;    private SignInServiceImpl signInService;
+&nbsp;    private SignUpServiceImpl signUpService;
+&nbsp;    private ResponseMapper responseMapper;
+&nbsp;    private JwtUtils jwtUtils;
+&nbsp;    private RedisTokenService redisTokenService;
+&nbsp;    private AuthServiceImpl authService;
+&nbsp;    private AuthMapper authMapper;
+&nbsp;    private SellerRepository sellerRepository;
+&nbsp;    private AdminMapper adminMapper;
+&nbsp;
+&nbsp;    private final long REFRESH_EXPIRE_TIME = 7L * 24 * 60 * 60 * 1000; // 7 days
+&nbsp;    private final long ACCESS_EXPIRE_TIME = 7L * 24 * 60 * 60 * 1000; // 15 * 60 * 1000; // 15 minutes
+&nbsp;//    private final long ACCESS_EXPIRE_TIME = 30 * 1000; // 30 seconds
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Register a new customer account&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Handles new customer registration by collecting user information and initiating the OTP (One-Time Password)
+&nbsp;                        verification process. This endpoint accepts user details such as name, email, and password, and sends a
+&nbsp;                        verification OTP to the provided email address.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The user submits their registration information via this endpoint.
+&nbsp;                        2. The system validates the request and creates a pending registration record.
+&nbsp;                        3. An OTP is generated and sent to the user&#39;s email for verification.
+&nbsp;                        4. The user must confirm the OTP using a separate verification endpoint to activate their account.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Customer account registration for the e-commerce platform.
+&nbsp;                        - Initiating secure OTP-based email verification during signup.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/signup&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;Object, Object&gt;&gt; signUp(@Valid @RequestBody SignUpRequest req) {
+<b class="nc">&nbsp;        signUpService.startSignUp(req);</b>
+<b class="nc">&nbsp;        return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                true, &quot;Sent OTP to email&quot;, null, null
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Sign in for user&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Authenticates a registered user (buyer or seller) using their username and password.
+&nbsp;                        Upon successful login, the system issues an access token and a refresh token
+&nbsp;                        for secure session management.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The user submits their login credentials (username and password).
+&nbsp;                        2. The system validates the credentials and checks if the user exists and is active.
+&nbsp;                        3. On successful authentication:
+&nbsp;                           - A short-lived **access token** (for API access) and a long-lived **refresh token** are generated.
+&nbsp;                           - The refresh token is stored securely in Redis for future use.
+&nbsp;                        4. The response contains token information and user details such as username, email, role, and ID.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Allow users to log in to their account via web.
+&nbsp;                        - Initialize a session for authenticated API requests.
+&nbsp;                        - Manage secure token-based authentication (JWT).
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/signin&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;AuthResponse, Object&gt;&gt; signIn(@Valid @RequestBody SignInRequest req) {
+&nbsp;        try {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Auth Controller] Starting sign in controller&quot;);</b>
+<b class="fc">&nbsp;            Buyer user = signInService.startSignIn(req);</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Auth Controller] User active: {}&quot;, user.isActive());</b>
+&nbsp;
+<b class="fc">&nbsp;            if (!user.isActive()) {</b>
+<b class="fc">&nbsp;                throw new AuthException(&quot;Account was be blocked.&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Auth Controller] Generating tokens&quot;);</b>
+<b class="fc">&nbsp;            String accessToken = jwtUtils.generateTokenFromUsername(user.getUsername(), ACCESS_EXPIRE_TIME);</b>
+<b class="fc">&nbsp;            String refreshToken = jwtUtils.generateTokenFromUsername(user.getUsername(), REFRESH_EXPIRE_TIME);</b>
+&nbsp;
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Auth Controller] Saving refresh token into Redis&quot;);</b>
+<b class="fc">&nbsp;            redisTokenService.saveTokenToRedis(user.getEmail(), refreshToken, REFRESH_EXPIRE_TIME);</b>
+&nbsp;
+<b class="fc">&nbsp;            AuthResponse authResponse = authMapper.toDto(user, accessToken, refreshToken);</b>
+<b class="fc">&nbsp;            authResponse.setBuyerId(user.getBuyerId());</b>
+&nbsp;
+<b class="fc">&nbsp;            Optional&lt;Seller&gt; seller = sellerRepository.findByBuyer(user);</b>
+<b class="pc">&nbsp;            if (seller.isPresent() &amp;&amp; seller.get().getStatus() == SellerStatus.ACCEPTED) {</b>
+<b class="fc">&nbsp;                authResponse.setRole(&quot;ROLE_SELLER&quot;);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                authResponse.setRole(&quot;ROLE_BUYER&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Auth Controller] Ending sign in controller&quot;);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;SIGN IN SUCCESSFULLY&quot;,
+&nbsp;                    authResponse, null
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Auth Controller] Error occured in sign in controller&quot;);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;SIGN IN FAILED&quot;,
+<b class="fc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Sign in for Admin&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Authenticates an administrator using their employee number and password, and returns access and refresh tokens
+&nbsp;                        for session management. This endpoint is intended exclusively for admin accounts.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The admin submits valid credentials (employee number and password).
+&nbsp;                        2. The system validates the credentials against admin records.
+&nbsp;                        3. Upon successful authentication:
+&nbsp;                           - A short-lived **access token** and a long-lived **refresh token** are generated.
+&nbsp;                           - The refresh token is securely stored in Redis with a defined expiration time.
+&nbsp;                        4. The response includes admin details, assigned role, and generated tokens for authorization.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Allow administrators to securely log into the management dashboard.
+&nbsp;                        - Generate and return JWT tokens for admin session handling.
+&nbsp;                        - Provide role-based access for administrative API endpoints.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/admin/signin&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; signInAdmin(@Valid @RequestBody SignInAdminRequest req) {
+&nbsp;        try {
+<b class="fc">&nbsp;            Admin user = signInService.startSignInAdmin(req);</b>
+<b class="pc">&nbsp;            if (user.getStatus() == AccountStatus.INACTIVE) {</b>
+<b class="nc">&nbsp;                throw new AuthException(&quot;This admin account was be blocked.&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            String accessToken = jwtUtils.generateTokenFromUsername(user.getEmployeeNumber(), ACCESS_EXPIRE_TIME);</b>
+<b class="fc">&nbsp;            String refreshToken = jwtUtils.generateTokenFromUsername(user.getEmployeeNumber(), REFRESH_EXPIRE_TIME);</b>
+<b class="fc">&nbsp;            redisTokenService.saveTokenToRedis(user.getEmail(), refreshToken, REFRESH_EXPIRE_TIME);</b>
+&nbsp;
+<b class="fc">&nbsp;            AdminAuthResponse authResponse = AdminAuthResponse.builder()</b>
+<b class="fc">&nbsp;                    .adminResponse(adminMapper.toDto(user))</b>
+<b class="fc">&nbsp;                    .accessToken(accessToken)</b>
+<b class="fc">&nbsp;                    .refreshToken(refreshToken)</b>
+<b class="fc">&nbsp;                    .role(&quot;ROLE_ADMIN&quot;)</b>
+<b class="fc">&nbsp;                    .build();</b>
+&nbsp;
+<b class="fc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    true,
+&nbsp;                    &quot;ADMIN SIGN IN SUCCESSFULLY.&quot;,
+&nbsp;                    authResponse, null
+&nbsp;            ));
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;ADMIN SIGN IN FAILED.&quot;,
+<b class="nc">&nbsp;                    null, e.getMessage()</b>
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Sign in with Google for customer&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Authenticates a customer using their Google account via OAuth 2.0
+&nbsp;                        This endpoint verifies the Google-provided ID token, registers the user if they do not exist,  
+&nbsp;                        and issues new JWT access and refresh tokens for session management.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The client (frontend or mobile app) sends a Google ID token obtained from Google Sign-In SDK.
+&nbsp;                        2. The system validates the token with Google&#39;s public key to confirm authenticity.
+&nbsp;                        3. If the user already exists, their account is retrieved. Otherwise, a new account is created automatically.
+&nbsp;                        4. JWT access and refresh tokens are generated for the user.
+&nbsp;                        5. The refresh token is stored securely in Redis for session management.
+&nbsp;                        6. The response includes authenticated user details and tokens.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Allowing users to log in or register quickly using their Google account.
+&nbsp;                        - Streamlining onboarding without password-based authentication.
+&nbsp;                        - Supporting mobile and web-based OAuth flows.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/signin-google&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;AuthResponse, Object&gt;&gt; loginWithGoogle(@RequestBody SignInGoogleRequest body) throws Exception {
+&nbsp;        try {
+<b class="fc">&nbsp;            Buyer user = signInService.startSignInWithGoogle(body);</b>
+<b class="nc">&nbsp;            if (!user.isActive()) {</b>
+<b class="nc">&nbsp;                throw new AuthException(&quot;User was be blocked.&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String accessToken = jwtUtils.generateTokenFromUsername(user.getUsername(), ACCESS_EXPIRE_TIME);</b>
+<b class="nc">&nbsp;            String refreshToken = jwtUtils.generateTokenFromUsername(user.getUsername(), REFRESH_EXPIRE_TIME);</b>
+<b class="nc">&nbsp;            redisTokenService.saveTokenToRedis(user.getEmail(), refreshToken, REFRESH_EXPIRE_TIME);</b>
+&nbsp;
+<b class="nc">&nbsp;            AuthResponse authResponse = authMapper.toDto(user, accessToken, refreshToken);</b>
+<b class="nc">&nbsp;            Optional&lt;Seller&gt; seller = sellerRepository.findByBuyer(user);</b>
+<b class="nc">&nbsp;            if (seller.isPresent() &amp;&amp; seller.get().getStatus() == SellerStatus.ACCEPTED) {</b>
+<b class="nc">&nbsp;                authResponse.setRole(&quot;ROLE_SELLER&quot;);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                authResponse.setRole(&quot;ROLE_BUYER&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            authResponse.setBuyerId(user.getBuyerId());</b>
+&nbsp;
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.OK.value())</b>
+<b class="nc">&nbsp;                    .body(responseMapper.toDto(</b>
+&nbsp;                            true, &quot;SIGN IN SUCCESSFULLY&quot;, authResponse, null
+&nbsp;                    ));
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            return ResponseEntity.status(HttpStatus.OK.value())</b>
+<b class="fc">&nbsp;                    .body(responseMapper.toDto(</b>
+<b class="fc">&nbsp;                            false, &quot;SIGN IN FAILED&quot;, null, e.getMessage()</b>
+&nbsp;                    ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Verify username for forgot password request&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Validates a user&#39;s username  as part of the &quot;forgot password&quot; process.  
+&nbsp;                        If the provided username is valid and associated with an existing account, the system generates a One-Time Password (OTP)
+&nbsp;                        and sends it to the registered email address for verification.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The user submits their username or email address.
+&nbsp;                        2. The system checks if the account exists and is active.
+&nbsp;                        3. If valid, an OTP is generated and sent to the associated email.
+&nbsp;                        4. The response confirms that the OTP has been sent.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Initiating password reset flow for users who forgot their password.
+&nbsp;                        - Ensuring that only valid and registered users can reset passwords.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/verify-username-forgot-password&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;Object, Object&gt;&gt; verifyForgotPassword(@RequestBody VerifyUsernameForgotPasswordRequest req) throws Exception {
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; result = authService.verifyUsernameForgotPassword(req.getUsername());</b>
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(responseMapper.toDto(</b>
+&nbsp;                true, &quot;OTP Sent To Email&quot;, result, null
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Verify OTP for forgot password&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Validates the One-Time Password (OTP) sent to the user&#39;s registered email as part of the 
+&nbsp;                        &quot;forgot password&quot; flow. This step ensures that the requester owns the email account 
+&nbsp;                        associated with the username before allowing password reset.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The user submits their email/username and the OTP they received via email.
+&nbsp;                        2. The system verifies whether the OTP matches and is still valid (not expired).
+&nbsp;                        3. If verification succeeds, the system authorizes the next step — password reset.
+&nbsp;                        4. If verification fails, an appropriate error message is returned.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Step 2 in the forgot password process after requesting an OTP.
+&nbsp;                        - Ensuring user identity before allowing password change.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/verify-otp-forgot-password&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;Object, Object&gt;&gt; verifyOtpForgotPassword(@RequestBody VerifyOtpForgotPasswordRequest request) {
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; We are at verifyOtpForgotPassword&quot;);</b>
+<b class="nc">&nbsp;        authService.verifyOtpForgotPassword(request);</b>
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(responseMapper.toDto(</b>
+&nbsp;                true, &quot;Verified OTP Successfully&quot;, null, null
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Reset password using forgot password flow&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Allows a verified user to reset their password after successful OTP verification 
+&nbsp;                        during the &quot;forgot password&quot; process.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The user has already verified their OTP via `/verify-otp-forgot-password`.
+&nbsp;                        2. The user sends this request with their username/email and new password.
+&nbsp;                        3. The system validates the request, updates the stored password, and confirms success.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Completing the password recovery process for users who forgot their password.
+&nbsp;                        - Ensuring secure password updates after identity verification.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - The new password is securely hashed before being stored.
+&nbsp;                        - Users must have a valid OTP verification record before calling this API.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/forgot-password&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;Buyer, Object&gt;&gt; forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) throws Exception {
+<b class="nc">&nbsp;        Buyer result = authService.forgotPassword(request);</b>
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;UPDATED PASSWORD SUCCESSFULLY&quot;,
+&nbsp;                result,
+&nbsp;                null
+&nbsp;        ));
+&nbsp;    }
+&nbsp;
+&nbsp;    @PreAuthorize(&quot;hasAnyRole(&#39;ROLE_BUYER&#39;, &#39;ROLE_SELLER&#39;)&quot;)
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Change Password API&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Allows an authenticated user to change their password while logged in.  
+&nbsp;                        The user must provide their current password and a new password.  
+&nbsp;                        The system validates the current password before securely updating it to the new one.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The user sends their current and new password in the request body.
+&nbsp;                        2. The system verifies that the current password is correct.
+&nbsp;                        3. If validation passes, the password is updated (hashed and stored securely).
+&nbsp;                        4. The response confirms that the password was successfully changed.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Users changing their password from their account settings.
+&nbsp;                        - Security best practices (e.g., periodic password updates).
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - Only authenticated users can access this endpoint.
+&nbsp;                        - The new password must meet platform password policy requirements.
+&nbsp;                        - Passwords are never stored in plain text and are hashed before persistence.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @PostMapping(&quot;/change-password&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;BuyerResponse, Object&gt;&gt; changePassword(@Valid @RequestBody ChangePasswordRequest request) throws Exception {
+<b class="nc">&nbsp;        Buyer buyer = authService.changePassword(request);</b>
+<b class="nc">&nbsp;        BuyerResponse responseData = buyerMapper.toDto(buyer);</b>
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(</b>
+<b class="nc">&nbsp;                responseMapper.toDto(</b>
+&nbsp;                        true,
+&nbsp;                        &quot;CHANGE PASSWORD SUCCESSFULLY&quot;,
+&nbsp;                        responseData,
+&nbsp;                        null)
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/verify-otp&quot;)
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Verify OTP via email&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Verifies the One-Time Password (OTP) sent to the user&#39;s email address during registration.  
+&nbsp;                        Upon successful verification, the user&#39;s account is activated, and access/refresh tokens are generated 
+&nbsp;                        to authenticate the user immediately.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The user submits the OTP received via email along with their email/username.
+&nbsp;                        2. The system validates the OTP and ensures it hasn&#39;t expired.
+&nbsp;                        3. If valid:
+&nbsp;                           - The user&#39;s account is marked as verified/active.
+&nbsp;                           - JWT access and refresh tokens are generated for the user.
+&nbsp;                           - The refresh token is securely stored in Redis for future authentication.
+&nbsp;                        4. The system returns a success response containing authentication tokens.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Final step in the sign-up flow for verifying a newly registered email address.
+&nbsp;                        - Automatically signing in a user after OTP verification.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;AuthResponse, Object&gt;&gt; verify(@Valid @RequestBody VerifyOtpRequest req) {
+<b class="nc">&nbsp;        Buyer buyer = signUpService.verifyOtp(req);</b>
+<b class="nc">&nbsp;        String refreshToken = jwtUtils.generateTokenFromUsername(buyer.getUsername(), REFRESH_EXPIRE_TIME);</b>
+<b class="nc">&nbsp;        String accessToken = jwtUtils.generateTokenFromUsername(buyer.getUsername(), ACCESS_EXPIRE_TIME);</b>
+<b class="nc">&nbsp;        redisTokenService.saveTokenToRedis(buyer.getEmail(), refreshToken, REFRESH_EXPIRE_TIME);</b>
+&nbsp;
+<b class="nc">&nbsp;        AuthResponse authResponse = authMapper.toDto(buyer, accessToken, refreshToken);</b>
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(</b>
+<b class="nc">&nbsp;                responseMapper.toDto(</b>
+&nbsp;                        true,
+&nbsp;                        &quot;SIGN UP SUCCESSFULLY&quot;,
+&nbsp;                        authResponse,
+&nbsp;                        null
+&nbsp;                )
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/refresh-token&quot;)
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Refresh Access Token&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Issues a new **access token** (and optionally a new refresh token) when the existing access token has expired.  
+&nbsp;                        This endpoint validates the provided refresh token to ensure it is still active and not revoked.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The client sends the refresh token in the `Authorization` header (format: `Bearer &lt;refresh_token&gt;`).
+&nbsp;                        2. The system validates the token and verifies it against the stored value in Redis.
+&nbsp;                        3. If valid:
+&nbsp;                           - A new access token and refresh token are generated.
+&nbsp;                           - The old refresh token is deleted and replaced in Redis.
+&nbsp;                           - The new tokens are returned to the client.
+&nbsp;                        4. If invalid or expired:
+&nbsp;                           - The system returns a `400 Bad Request` with an &quot;INVALID REFRESH TOKEN&quot; message.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Maintaining session continuity without forcing the user to log in again.
+&nbsp;                        - Mobile or web applications where access tokens are short-lived but refresh tokens persist longer.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - The refresh token must be sent in the Authorization header.
+&nbsp;                        - Each refresh token is single-use and is rotated upon refresh.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    public ResponseEntity&lt;?&gt; refreshToken(HttpServletRequest request) {
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [Refresh token controller]: {}&quot;, request.getHeader(&quot;Authorization&quot;));</b>
+&nbsp;        try {
+<b class="fc">&nbsp;            Map&lt;String, Object&gt; data = authService.refreshToken(request);</b>
+&nbsp;            String email, username;
+<b class="fc">&nbsp;            Admin admin = null;</b>
+<b class="fc">&nbsp;            Buyer buyer = null;</b>
+&nbsp;
+<b class="pc">&nbsp;            if (data.get(&quot;admin&quot;) != null) {</b>
+<b class="nc">&nbsp;                admin = (Admin) data.get(&quot;admin&quot;);</b>
+<b class="nc">&nbsp;                email = admin.getEmail();</b>
+<b class="nc">&nbsp;                username = admin.getEmployeeNumber();</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                buyer = (Buyer) data.get(&quot;buyer&quot;);</b>
+<b class="fc">&nbsp;                email = buyer.getEmail();</b>
+<b class="fc">&nbsp;                username = buyer.getUsername();</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [User email]: {}&quot;, email);</b>
+<b class="fc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [Username]: {}&quot;, username);</b>
+<b class="fc">&nbsp;            String savedToken = redisTokenService.getRefreshToken(email);</b>
+<b class="fc">&nbsp;            String token = (String) data.get(&quot;refresh_token&quot;);</b>
+&nbsp;
+<b class="pc">&nbsp;            if (redisTokenService.verifyRefreshToken(email) &amp;&amp;</b>
+<b class="fc">&nbsp;                    savedToken.equalsIgnoreCase(token)) {</b>
+&nbsp;
+<b class="fc">&nbsp;                String newAccessToken = jwtUtils.generateTokenFromUsername(username, ACCESS_EXPIRE_TIME);</b>
+<b class="fc">&nbsp;                String newRefreshToken = jwtUtils.generateTokenFromUsername(username, REFRESH_EXPIRE_TIME);</b>
+<b class="fc">&nbsp;                redisTokenService.deleteRefreshToken(email);</b>
+<b class="fc">&nbsp;                redisTokenService.saveTokenToRedis(email, newRefreshToken, REFRESH_EXPIRE_TIME);</b>
+&nbsp;
+<b class="fc">&nbsp;                return ResponseEntity.ok(responseMapper.toDto(</b>
+&nbsp;                        true,
+&nbsp;                        &quot;GET NEW TOKEN SUCCESSFULLY.&quot;,
+<b class="fc">&nbsp;                        authMapper.toDto(username, email, newAccessToken, newRefreshToken),</b>
+&nbsp;                        null
+&nbsp;                ));
+&nbsp;            } else {
+<b class="fc">&nbsp;                return ResponseEntity.badRequest().body(responseMapper.toDto(</b>
+&nbsp;                        false,
+&nbsp;                        &quot;INVALID REFRESH TOKEN&quot;,
+&nbsp;                        null, null
+&nbsp;                ));
+&nbsp;            }
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.internalServerError().body(responseMapper.toDto(</b>
+&nbsp;                    false,
+&nbsp;                    &quot;ERROR OCCUR WHEN GET NEW TOKENS.&quot;,
+&nbsp;                    null, e
+&nbsp;            ));
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

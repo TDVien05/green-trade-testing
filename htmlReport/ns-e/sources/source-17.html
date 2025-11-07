@@ -1,0 +1,124 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UpgradeAccountRequest</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.request</a>
+</div>
+
+<h1>Coverage Summary for Class: UpgradeAccountRequest (Green_trade.green_trade_platform.request)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">UpgradeAccountRequest</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.request;
+&nbsp;
+&nbsp;import jakarta.validation.constraints.NotBlank;
+&nbsp;import jakarta.validation.constraints.Pattern;
+&nbsp;import lombok.AllArgsConstructor;
+&nbsp;import lombok.Builder;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.NoArgsConstructor;
+&nbsp;
+&nbsp;@Builder
+&nbsp;@Data
+&nbsp;@NoArgsConstructor
+&nbsp;@AllArgsConstructor
+&nbsp;public class UpgradeAccountRequest {
+&nbsp;    @NotBlank(message = &quot;Store name is required.&quot;)
+&nbsp;    @Pattern(
+&nbsp;            regexp = &quot;^[A-Za-z0-9\\s\\p{L}]{2,50}$&quot;,
+&nbsp;            message = &quot;Store name must be 2–50 characters long and contain only letters, numbers, and spaces.&quot;
+&nbsp;    )
+&nbsp;    private String storeName;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Tax number is required.&quot;)
+&nbsp;    @Pattern(
+&nbsp;            regexp = &quot;^[0-9]{10,13}$&quot;,
+&nbsp;            message = &quot;Tax number must contain only digits and be 10–13 digits long.&quot;
+&nbsp;    )
+&nbsp;    private String taxNumber;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Identity number is required.&quot;)
+&nbsp;    @Pattern(
+&nbsp;            regexp = &quot;^[0-9]{9,12}$&quot;,
+&nbsp;            message = &quot;Identity number must contain only digits and be 9–12 digits long.&quot;
+&nbsp;    )
+&nbsp;    private String identityNumber;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Seller name is required.&quot;)
+&nbsp;    @Pattern(
+&nbsp;            message = &quot;Seller name just contains only characters.&quot;,
+&nbsp;            regexp = &quot;^[A-Za-z]+$&quot;
+&nbsp;    )
+&nbsp;    private String sellerName;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Nationality is required.&quot;)
+&nbsp;    @Pattern(
+&nbsp;            message = &quot;Nationality just contains only characters.&quot;,
+&nbsp;            regexp = &quot;^[A-Za-z]+$&quot;
+&nbsp;    )
+&nbsp;    private String nationality;
+&nbsp;
+&nbsp;    @NotBlank(message = &quot;Home(country) is required.&quot;)
+&nbsp;    @Pattern(
+&nbsp;            message = &quot;Home just contains only characters.&quot;,
+&nbsp;            regexp = &quot;^[A-Za-z0-9]+$&quot;
+&nbsp;    )
+&nbsp;    private String home;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>

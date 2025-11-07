@@ -1,0 +1,222 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SignUpServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.service.implement</a>
+</div>
+
+<h1>Coverage Summary for Class: SignUpServiceImpl (Green_trade.green_trade_platform.service.implement)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SignUpServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (7/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.5%
+  </span>
+  <span class="absValue">
+    (39/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.service.implement;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.mapper.BuyerMapper;
+&nbsp;import Green_trade.green_trade_platform.exception.EmailException;
+&nbsp;import Green_trade.green_trade_platform.model.Buyer;
+&nbsp;import Green_trade.green_trade_platform.model.Wallet;
+&nbsp;import Green_trade.green_trade_platform.repository.BuyerRepository;
+&nbsp;import Green_trade.green_trade_platform.request.SignUpRequest;
+&nbsp;import Green_trade.green_trade_platform.request.VerifyOtpRequest;
+&nbsp;import Green_trade.green_trade_platform.service.OtpService;
+&nbsp;import Green_trade.green_trade_platform.service.SignUpService;
+&nbsp;import jakarta.mail.MessagingException;
+&nbsp;import jakarta.mail.internet.MimeMessage;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.mail.javamail.JavaMailSender;
+&nbsp;import org.springframework.mail.javamail.MimeMessageHelper;
+&nbsp;import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Random;
+&nbsp;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;public class SignUpServiceImpl implements SignUpService {
+&nbsp;
+&nbsp;    private BuyerRepository repository;
+&nbsp;    private RedisOtpService redisOtpService;
+&nbsp;    private BuyerMapper buyerMapper;
+&nbsp;    private JavaMailSender mailSender;
+&nbsp;    private DelegatingPasswordEncoder passwordEncoder;
+&nbsp;    private WalletServiceImpl walletServiceImpl;
+&nbsp;    private OtpServiceImpl otpService;
+&nbsp;
+&nbsp;    public SignUpServiceImpl(
+&nbsp;            BuyerRepository buyerRepository,
+&nbsp;            RedisOtpService redisOtpService,
+&nbsp;            BuyerMapper buyerMapper,
+&nbsp;            JavaMailSender javaMailSender,
+&nbsp;            DelegatingPasswordEncoder passwordEncoder,
+&nbsp;            WalletServiceImpl walletServiceImpl,
+&nbsp;            OtpServiceImpl otpService
+<b class="fc">&nbsp;    ) {</b>
+<b class="fc">&nbsp;        this.repository = buyerRepository;</b>
+<b class="fc">&nbsp;        this.redisOtpService = redisOtpService;</b>
+<b class="fc">&nbsp;        this.buyerMapper = buyerMapper;</b>
+<b class="fc">&nbsp;        this.mailSender = mailSender;</b>
+<b class="fc">&nbsp;        this.passwordEncoder = passwordEncoder;</b>
+<b class="fc">&nbsp;        this.walletServiceImpl = walletServiceImpl;</b>
+<b class="fc">&nbsp;        this.otpService = otpService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Starting sign up: saving buyer to redis and sending otp
+&nbsp;    @Override
+&nbsp;    public void startSignUp(SignUpRequest request) {
+<b class="fc">&nbsp;        if (repository.existsByEmail(request.getEmail())) {</b>
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Email already exits.&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (repository.existsByUsername(request.getUsername())) {</b>
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Username already exits.&quot;);</b>
+&nbsp;        }
+&nbsp;        // Create OTP
+<b class="fc">&nbsp;        String otp = String.format(&quot;%06d&quot;, new Random().nextInt(1_000_000));</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; OTP: {}&quot;, otp);</b>
+<b class="fc">&nbsp;        String hashPassword = passwordEncoder.encode(request.getPassword());</b>
+&nbsp;
+&nbsp;        // Save user temporary in Redis for verifying OTP via email
+&nbsp;        // User send request to sign up -&gt; create OTP + save user to Redis -&gt; user send verify OTP -&gt; save user into database
+<b class="fc">&nbsp;        redisOtpService.savePendingBuyer(request.getUsername(), hashPassword, request.getEmail(), otp);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Save pending buyer successfully.&quot;);</b>
+<b class="fc">&nbsp;        otpService.sendOtpEmail(request.getEmail(), otp);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Send otp successfully.&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Verify otp
+&nbsp;    @Override
+&nbsp;    public Buyer verifyOtp(VerifyOtpRequest request) {
+&nbsp;        // Get pending buyer in Redis
+<b class="fc">&nbsp;        Map&lt;String, String&gt; pending = redisOtpService.getPendingBuyer(request.getEmail());</b>
+<b class="fc">&nbsp;        if (pending == null) {</b>
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Invalid email or user did not sign up yet!&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed pending: {}&quot;, pending);</b>
+&nbsp;        // Get OTP in map
+<b class="fc">&nbsp;        String otp = pending.get(&quot;otp&quot;);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Otp from request: {}&quot;, request.getOtp());</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Otp from pending: {}&quot;, otp);</b>
+<b class="pc">&nbsp;        if (!request.getOtp().equals(otp)) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Otp are not the same!&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Passed OTP matched&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        Buyer buyer = Buyer.builder()</b>
+<b class="fc">&nbsp;                .username(pending.get(&quot;username&quot;))</b>
+<b class="fc">&nbsp;                .password(pending.get(&quot;password&quot;))</b>
+<b class="fc">&nbsp;                .email(request.getEmail())</b>
+<b class="fc">&nbsp;                .build();</b>
+<b class="fc">&nbsp;        buyer = repository.save(buyer);</b>
+<b class="fc">&nbsp;        Wallet wallet = walletServiceImpl.createLocalWalletForBuyer(buyer);</b>
+<b class="fc">&nbsp;        log.info(&quot;&gt;&gt;&gt; Created wallet for buyer: {} with id {}&quot;, buyer.getUsername(), wallet.getWalletId());</b>
+<b class="fc">&nbsp;        redisOtpService.deletePendingBuyer(request.getEmail());</b>
+<b class="fc">&nbsp;        return buyer;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-07 21:16</div>
+</div>
+</body>
+</html>

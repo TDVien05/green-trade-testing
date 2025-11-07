@@ -1,0 +1,374 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ShippingServiceController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">Green_trade.green_trade_platform.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: ShippingServiceController (Green_trade.green_trade_platform.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShippingServiceController</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/53)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package Green_trade.green_trade_platform.controller;
+&nbsp;
+&nbsp;import Green_trade.green_trade_platform.exception.OrderNotFound;
+&nbsp;import Green_trade.green_trade_platform.exception.PaymentMethodNotSupportedException;
+&nbsp;import Green_trade.green_trade_platform.exception.PostProductNotFound;
+&nbsp;import Green_trade.green_trade_platform.mapper.ResponseMapper;
+&nbsp;import Green_trade.green_trade_platform.model.*;
+&nbsp;import Green_trade.green_trade_platform.repository.OrderRepository;
+&nbsp;import Green_trade.green_trade_platform.repository.PostProductRepository;
+&nbsp;import Green_trade.green_trade_platform.request.ShippingFeeRequest;
+&nbsp;import Green_trade.green_trade_platform.response.RestResponse;
+&nbsp;import Green_trade.green_trade_platform.service.PostProductService;
+&nbsp;import Green_trade.green_trade_platform.service.implement.BuyerServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.service.implement.GhnServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.service.implement.OrderServiceImpl;
+&nbsp;import Green_trade.green_trade_platform.service.implement.PaymentServiceImpl;
+&nbsp;import com.fasterxml.jackson.core.JsonProcessingException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import jakarta.validation.Valid;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/api/v1/shipping&quot;)
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;public class ShippingServiceController {
+&nbsp;
+&nbsp;    private final GhnServiceImpl ghnService;
+&nbsp;    private final ResponseMapper responseMapper;
+&nbsp;    private final OrderRepository orderRepository;
+&nbsp;    private final PostProductService postProductService;
+&nbsp;    private final PostProductRepository postProductRepository;
+&nbsp;    private final BuyerServiceImpl buyerService;
+&nbsp;    private final PaymentServiceImpl paymentService;
+&nbsp;    private final OrderServiceImpl orderService;
+&nbsp;
+&nbsp;    public ShippingServiceController(
+&nbsp;            GhnServiceImpl ghnService,
+&nbsp;            ResponseMapper responseMapper,
+&nbsp;            OrderRepository orderRepository,
+&nbsp;            PostProductService postProductService,
+&nbsp;            PostProductRepository postProductRepository,
+&nbsp;            BuyerServiceImpl buyerService,
+&nbsp;            PaymentServiceImpl paymentService,
+&nbsp;            OrderServiceImpl orderService
+<b class="nc">&nbsp;    ) {</b>
+<b class="nc">&nbsp;        this.ghnService = ghnService;</b>
+<b class="nc">&nbsp;        this.responseMapper = responseMapper;</b>
+<b class="nc">&nbsp;        this.orderRepository = orderRepository;</b>
+<b class="nc">&nbsp;        this.postProductService = postProductService;</b>
+<b class="nc">&nbsp;        this.postProductRepository = postProductRepository;</b>
+<b class="nc">&nbsp;        this.buyerService = buyerService;</b>
+<b class="nc">&nbsp;        this.paymentService = paymentService;</b>
+<b class="nc">&nbsp;        this.orderService = orderService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Fetch list of provinces&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Retrieves a list of provinces available from the GHN (Giao Hàng Nhanh) shipping service.  
+&nbsp;                        This data is often used to populate province dropdowns during address creation or checkout.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The system calls the GHN API to retrieve the list of supported provinces.
+&nbsp;                        2. The response is mapped into a key-value structure (province code → province name).
+&nbsp;                        3. The endpoint returns a JSON object containing all provinces supported for shipping.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Displaying a list of provinces when users fill out shipping or billing addresses.
+&nbsp;                        - Fetching location data dynamically from the GHN logistics API.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @GetMapping(&quot;/provinces&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getProvinces() throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; provincesMap = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        provincesMap = ghnService.getProvinceList();</b>
+<b class="nc">&nbsp;        RestResponse response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;FETCH PROVINCES SUCCESSFULLY&quot;,
+&nbsp;                provincesMap,
+&nbsp;                null
+&nbsp;        );
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Fetch list of districts by province ID&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Retrieves a list of districts for a specified province using the GHN (Giao Hàng Nhanh) shipping service.  
+&nbsp;                        This endpoint is typically used when the user selects a province, and the frontend needs to load 
+&nbsp;                        all districts under that province dynamically.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The client provides a `provinceId` as a request parameter.
+&nbsp;                        2. The system sends a request to the GHN API to fetch districts belonging to that province.
+&nbsp;                        3. The districts are mapped into a key-value format (district code → district name).
+&nbsp;                        4. The endpoint returns the resulting district list.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Displaying available districts when users select a province during checkout or address creation.
+&nbsp;                        - Dynamically populating location dropdowns in registration or shipping forms.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @GetMapping(&quot;/districts&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getDistricts(
+&nbsp;            @RequestParam int provinceId
+&nbsp;    ) throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; districtsMap = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        districtsMap = ghnService.getDistrictListByProvinceId(provinceId);</b>
+<b class="nc">&nbsp;        RestResponse response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;FETCH DISTRICTS SUCCESSFULLY&quot;,
+&nbsp;                districtsMap,
+&nbsp;                null
+&nbsp;        );
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Fetch list of wards by district ID&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Retrieves a list of wards (subdistricts) for a specific district using the GHN (Giao Hàng Nhanh) shipping service.  
+&nbsp;                        This endpoint is usually called after a district is selected, allowing the frontend to dynamically display 
+&nbsp;                        all available wards under that district.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The client provides a `districtId` as a request parameter.
+&nbsp;                        2. The system calls the GHN API to fetch wards corresponding to the given district.
+&nbsp;                        3. The ward data is formatted as a key-value map (ward code → ward name).
+&nbsp;                        4. The formatted list is returned to the client.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Displaying available wards when users select a district during checkout or address creation.
+&nbsp;                        - Completing address selection for shipping, billing, or delivery purposes.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @GetMapping(&quot;/wards&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getWards(
+&nbsp;            @RequestParam int districtId
+&nbsp;    ) throws JsonProcessingException {
+<b class="nc">&nbsp;        Map&lt;String, String&gt; wardsMap = new HashMap&lt;&gt;();</b>
+<b class="nc">&nbsp;        wardsMap = ghnService.getWardListByDistrictId(districtId);</b>
+<b class="nc">&nbsp;        RestResponse response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;FETCH WARDS SUCCESSFULLY&quot;,
+&nbsp;                wardsMap,
+&nbsp;                null
+&nbsp;        );
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Fetch shipping fee for a specific order&quot;,
+&nbsp;            description = &quot;&quot;&quot;
+&nbsp;                        Retrieves the shipping fee for a given order using the GHN (Giao Hàng Nhanh) shipping service.  
+&nbsp;                        The system uses order details (such as delivery address, package weight, and dimensions) to query 
+&nbsp;                        GHN&#39;s API and return the calculated shipping cost.
+&nbsp;                    
+&nbsp;                        **Workflow:**
+&nbsp;                        1. The client sends an `orderId` as a path variable.
+&nbsp;                        2. The system validates that the order exists.
+&nbsp;                        3. The GHN API is called with the order’s delivery information.
+&nbsp;                        4. The calculated shipping fee and related details (service type, estimated delivery time, etc.) are returned.
+&nbsp;                    
+&nbsp;                        **Use cases:**
+&nbsp;                        - Displaying the estimated or actual shipping fee on the order details page.
+&nbsp;                        - Allowing sellers or admins to verify delivery costs before fulfillment.
+&nbsp;                        - Showing buyers the delivery cost breakdown in checkout or order tracking screens.
+&nbsp;                    
+&nbsp;                        **Security Notes:**
+&nbsp;                        - Requires a valid JWT token (`ROLE_BUYER`, `ROLE_SELLER`, or `ROLE_ADMIN`).
+&nbsp;                        - A user can only access shipping fee information for orders they own.
+&nbsp;                    &quot;&quot;&quot;
+&nbsp;    )
+&nbsp;    @GetMapping(&quot;/shipping-fee/{orderId}&quot;)
+&nbsp;    public ResponseEntity&lt;?&gt; getShippingFee(
+&nbsp;            @PathVariable Long orderId
+&nbsp;    ) throws Exception {
+<b class="nc">&nbsp;        int codValue = 0;</b>
+<b class="nc">&nbsp;        Order order = orderRepository.findById(orderId).orElseThrow(() -&gt; new OrderNotFound());</b>
+<b class="nc">&nbsp;        Map&lt;String, String&gt; shippingFeeData = ghnService.getShippingFeeDto(order, codValue);</b>
+<b class="nc">&nbsp;        RestResponse response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;FETCH SHIPPING FEE SUCCESSFULLY&quot;,
+&nbsp;                shippingFeeData,
+&nbsp;                null
+&nbsp;        );
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/shipping-fee&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;Map&lt;String, String&gt;, Object&gt;&gt; getShippingFee(
+&nbsp;            @Valid @RequestBody ShippingFeeRequest request
+&nbsp;    ) throws Exception {
+<b class="nc">&nbsp;        int codValue = 0;</b>
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [ShippingServiceController] in getShippingFee: codValue = {}&quot;, codValue);</b>
+<b class="nc">&nbsp;        PostProduct postProduct = postProductRepository.findById(request.getPostId()).orElseThrow(() -&gt; new PostProductNotFound());</b>
+&nbsp;
+<b class="nc">&nbsp;        Buyer currentBuyer = buyerService.getCurrentUser();</b>
+<b class="nc">&nbsp;        Buyer targetBuyer = currentBuyer;</b>
+<b class="nc">&nbsp;        targetBuyer.setWardName(request.getWardName());</b>
+<b class="nc">&nbsp;        targetBuyer.setDistrictName(request.getDistrictName());</b>
+<b class="nc">&nbsp;        targetBuyer.setProvinceName(request.getProvinceName());</b>
+&nbsp;
+<b class="nc">&nbsp;        Seller seller = postProduct.getSeller();</b>
+&nbsp;
+<b class="nc">&nbsp;        Payment payment = paymentService.findPaymentMethodById(request.getPaymentId());</b>
+&nbsp;
+<b class="nc">&nbsp;        if (payment == null) {</b>
+<b class="nc">&nbsp;            throw new PaymentMethodNotSupportedException();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [ShippingServiceController] in getShippingFee: Payment is supported&quot;);</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        if (payment.getGatewayName().equalsIgnoreCase(&quot;COD&quot;)) {</b>
+<b class="nc">&nbsp;            log.info(&quot;&gt;&gt;&gt; [ShippingServiceController] in getShippingFee: COD payment&quot;);</b>
+<b class="nc">&nbsp;            codValue = postProduct.getPrice().intValue();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        log.info(&quot;&gt;&gt;&gt; [ShippingServiceController] in getShippingFee: codValue = {}&quot;, codValue);</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, String&gt; shippingFeeData = ghnService.getShippingFeeDto(targetBuyer, seller, postProduct, codValue);</b>
+&nbsp;
+<b class="nc">&nbsp;        RestResponse&lt;Map&lt;String, String&gt;, Object&gt; response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;FETCH SHIPPING FEE SUCCESSFULLY&quot;,
+&nbsp;                shippingFeeData,
+&nbsp;                null
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/order/{orderId}/status&quot;)
+&nbsp;    public ResponseEntity&lt;RestResponse&lt;Map&lt;String, Object&gt;, Object&gt;&gt; getOrderStatus(@PathVariable Long orderId) {
+<b class="nc">&nbsp;        Order foundOrder = orderService.getOrderById(orderId);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (foundOrder == null) {</b>
+<b class="nc">&nbsp;            throw new OrderNotFound();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; responseData = ghnService.getLastestOrderStatus(foundOrder.getOrderCode());</b>
+&nbsp;
+<b class="nc">&nbsp;        RestResponse&lt;Map&lt;String, Object&gt;, Object&gt; response = responseMapper.toDto(</b>
+&nbsp;                true,
+&nbsp;                &quot;FETCH ORDER SHIPPING STATUS SUCCESSFULLY&quot;,
+&nbsp;                responseData,
+&nbsp;                null
+&nbsp;        );
+<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.OK.value()).body(response);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-11-06 20:39</div>
+</div>
+</body>
+</html>
